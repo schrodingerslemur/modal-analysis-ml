@@ -1,3 +1,6 @@
 # Large files
 *.dat
 *.inp
+
+# Folders
+data/
