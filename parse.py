@@ -96,14 +96,6 @@ def get_mode_df(contents, mode_number):
 
     return mode_df    
 
-def get_U_inplane(mode_df):
-    U1_sum = mode_df['U1'].sum()
-    U3_sum = mode_df['U3'].sum()
-    return np.sqrt(U1_sum**2 + U3_sum**2).item()
-
-def get_U_outplane(mode_df):
-    return mode_df['U2'].sum().item()
-
 def check_limit(l1, l2, threshold=300):
     errors = 0
     for a in l1:
@@ -148,39 +140,18 @@ def main(filename, num_samples, threshold):
     mode_table_df = get_mode_table_df(contents)
     max_modes = mode_table_df['mode_no'].max().item()
 
-    inplane = []
-    outplane = []
+    inplane_predictions = []
     for mode_number in range(1, max_modes+1):
         mode_df = get_mode_df(contents, mode_number)
-        U_inplane = get_U_inplane(mode_df)
-        U_outplane = get_U_outplane(mode_df)
+        oop, ip, x, y, z = get_proportions(mode_df, mode_number)
+        if ip > 96 and (x+z) > 100000:
+            inplane_predictions.append(mode_number)
 
-        inplane.append(U_inplane)
-        outplane.append(U_outplane)
-    
-    in_arr = np.array(inplane)
-    out_arr = np.array(outplane)
+    inplane_labels = [32, 33, 46, 47, 68, 69, 99, 100]
+    outplane_labels = [29, 36, 45, 48, 65, 71, 94, 103]
 
-    # For checking
-    df = pd.DataFrame({'in_arr': in_arr, 'out_arr': out_arr})
-    df['mode_no'] = df.index + 1
-    df['freq'] = mode_table_df['freq']
-    df.set_index('mode_no', inplace=True)
-    print(df)
-
-    top_inplane_indexes = np.argsort(in_arr)[-num_samples:][::-1] + 1 
-    top_outplane_indexes = np.argsort(out_arr)[-num_samples:][::-1] + 1
-
-    print(f"Top inplane modes: {top_inplane_indexes.tolist()}")
-    print(f"Top outplane modes: {top_outplane_indexes.tolist()}\n")
-
-    inplane_freqs = mode_table_df[mode_table_df['mode_no'].isin(top_inplane_indexes)]['freq'].tolist()
-    outplane_freqs = mode_table_df[mode_table_df['mode_no'].isin(top_outplane_indexes)]['freq'].tolist()
-
-    print("Inplane frequencies: ", inplane_freqs)
-    print("Outplane frequencies: ", outplane_freqs, "\n")
-
-    check_limit(inplane_freqs, outplane_freqs, threshold=threshold)
+    print(f"inplane predictions: {inplane_predictions}")
+    print(f"inplane labels: {inplane_labels}")
 
 if __name__ == "__main__":
     # Usage: python parse.py <.dat file path> <# of top samples> <threshold for inplane - outplane>
