@@ -145,6 +145,7 @@ def main(dat_file):
         oop, ip, x, y, z = get_proportions(mode_df, mode_number)
         if ip > 96 and (x+z) > 100000:
             if contains_node(mode_df):
+                print(mode_number, mode_df.head(), mode_df.tail())
                 inplane_predictions.append(mode_number)
 
     inplane_labels = [32, 33, 46, 47, 68, 69, 99, 100]
