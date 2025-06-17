@@ -131,6 +131,62 @@ def contains_node(mode_df, threshold=7, lower_p_thres=0):
     zero_proportion = (mode_df['resultant'] < threshold).sum()/len(mode_df)
     return zero_proportion > lower_p_thres
 
+def get_inplane(contents, max_modes):
+    inplane_preds = []
+
+    for mode_number in range(1, max_modes+1):
+        mode_df = get_mode_df(contents, mode_number)
+        _, ip, x, _, z = get_proportions(mode_df, mode_number)
+        if ip > 96 and (x+z) > 100000: ### TODO: Adjust this number
+            if contains_node(mode_df):
+                inplane_preds.append(mode_number)
+    
+    return inplane_preds
+
+def search_oop(contents, start, reverse=False, max_modes = 136):
+    """
+    Linear search
+    """
+    checks = 0 # if checks > 5, then take largest
+    if reverse:
+        inc = -1
+    else:
+        inc = 1
+
+    oop_values = []
+    while (checks <= 5):
+        checks += 1
+        start += inc
+        if start == 0 or start == max_modes:
+            break
+
+        mode_df = get_mode_df(contents, start)
+        oop, _, _, _, _ = get_proportions(mode_df, start)
+
+        if oop > 95:
+            return start
+        else:
+            oop_values.append((start, oop))
+
+    if len(oop_values) == 0:
+        return None ### TODO: Ensure correct logic
+    
+    largest_oop = max(oop_values, key=lambda x: x[1])
+    return largest_oop[0]
+
+def get_outplane(contents, inplane, max_modes):
+    outplane_preds = []
+    
+    for i in range(len(inplane)):
+        if i % 2 == 0:
+            reverse = True
+        else:
+            reverse = False
+        
+        outplane_preds.append(search_oop(contents, inplane[i], reverse=reverse))
+    
+    return outplane_preds
+
 def main(dat_file):
     # dat_file = "C346RS_frnt_rotor_modal_separation_10Jun25.dat"
     with open(dat_file, "r") as file:
@@ -139,20 +195,17 @@ def main(dat_file):
     mode_table_df = get_mode_table_df(contents)
     max_modes = mode_table_df['mode_no'].max().item()
 
-    inplane_predictions = []
-    for mode_number in range(1, max_modes+1):
-        mode_df = get_mode_df(contents, mode_number)
-        oop, ip, x, y, z = get_proportions(mode_df, mode_number)
-        if ip > 96 and (x+z) > 100000:
-            if contains_node(mode_df):
-                print(mode_number, mode_df.head(), mode_df.tail())
-                inplane_predictions.append(mode_number)
+    inplane_preds = get_inplane(contents, max_modes)
+    outplane_preds = get_outplane(contents, inplane_preds, max_modes)
 
     inplane_labels = [32, 33, 46, 47, 68, 69, 99, 100]
     outplane_labels = [29, 36, 45, 48, 65, 71, 94, 103]
 
-    print(f"inplane predictions: {inplane_predictions}")
+    print(f"inplane predictions: {inplane_preds}")
     print(f"inplane labels: {inplane_labels}")
+
+    print(f"outplane predictions: {outplane_preds}")
+    print(f"outplane labels: {outplane_labels}")
 
 if __name__ == "__main__":
     # Usage: python parse.py <.dat file path> 
