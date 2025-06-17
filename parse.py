@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 # TODO: 
-# - Plot zero points
+# - Figure out threshold
 # - Figure out order of magnitude for generalization
 
 def extract_table(contents: str, keyword: str, delim: str ='\n\n\n') -> str:
