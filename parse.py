@@ -131,7 +131,7 @@ def contains_node(mode_df, threshold=7, lower_p_thres=0):
     zero_proportion = (mode_df['resultant'] < threshold).sum()/len(mode_df)
     return zero_proportion > lower_p_thres
 
-def main(dat_file, num_samples, threshold):
+def main(dat_file):
     # dat_file = "C346RS_frnt_rotor_modal_separation_10Jun25.dat"
     with open(dat_file, "r") as file:
         contents = file.read()
@@ -154,9 +154,7 @@ def main(dat_file, num_samples, threshold):
     print(f"inplane labels: {inplane_labels}")
 
 if __name__ == "__main__":
-    # Usage: python parse.py <.dat file path> <# of top samples> <threshold for inplane - outplane>
-    # Example: python parse.py data/C346RS_frnt_rotor_modal_separation_10Jun25.dat 5 300
+    # Usage: python parse.py <.dat file path> 
+    # Example: python parse.py data/C346RS_frnt_rotor_modal_separation_10Jun25.dat 
     dat_file = sys.argv[1]
-    num_samples = int(sys.argv[2])
-    threshold = int(sys.argv[3])
-    main(dat_file, num_samples, threshold)
+    main(dat_file)
