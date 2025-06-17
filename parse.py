@@ -126,15 +126,14 @@ def get_proportions(mode_df, n):
     # print(f"Mode {n} has OOP: {oop*100}%, IP: {ip*100}%.\n")
     return oop*100, ip*100, sumsq_x, sumsq_y, sumsq_z
 
-def contains_node(mode_df, n, threshold=10**-2, lower_p_thres=0, upper_p_thres=0.011):
-    mode_df['abs_sum_xyz'] = (mode_df['U1'] + mode_df['U2'] + mode_df['U3']).abs()
-    zero_proportion = (mode_df['abs_sum_xyz'] < threshold).sum()/len(mode_df)
-    print(n, zero_proportion)
-    return lower_p_thres <= zero_proportion <= upper_p_thres
-    
-def main(filename, num_samples, threshold):
-    # filename = "C346RS_frnt_rotor_modal_separation_10Jun25.dat"
-    with open(filename, "r") as file:
+def contains_node(mode_df, threshold=7, lower_p_thres=0):
+    mode_df['resultant'] = np.sqrt(mode_df['U1']**2 + mode_df['U2']**2 + mode_df['U3']**2)
+    zero_proportion = (mode_df['resultant'] < threshold).sum()/len(mode_df)
+    return zero_proportion > lower_p_thres
+
+def main(dat_file, num_samples, threshold):
+    # dat_file = "C346RS_frnt_rotor_modal_separation_10Jun25.dat"
+    with open(dat_file, "r") as file:
         contents = file.read()
 
     mode_table_df = get_mode_table_df(contents)
@@ -145,7 +144,8 @@ def main(filename, num_samples, threshold):
         mode_df = get_mode_df(contents, mode_number)
         oop, ip, x, y, z = get_proportions(mode_df, mode_number)
         if ip > 96 and (x+z) > 100000:
-            inplane_predictions.append(mode_number)
+            if contains_node(mode_df):
+                inplane_predictions.append(mode_number)
 
     inplane_labels = [32, 33, 46, 47, 68, 69, 99, 100]
     outplane_labels = [29, 36, 45, 48, 65, 71, 94, 103]
@@ -155,8 +155,8 @@ def main(filename, num_samples, threshold):
 
 if __name__ == "__main__":
     # Usage: python parse.py <.dat file path> <# of top samples> <threshold for inplane - outplane>
-    # Example: python parse.py C346RS_frnt_rotor_modal_separation_10Jun25.dat 5 300
-    filename = sys.argv[1]
+    # Example: python parse.py data/C346RS_frnt_rotor_modal_separation_10Jun25.dat 5 300
+    dat_file = sys.argv[1]
     num_samples = int(sys.argv[2])
     threshold = int(sys.argv[3])
-    main(filename, num_samples, threshold)
+    main(dat_file, num_samples, threshold)
