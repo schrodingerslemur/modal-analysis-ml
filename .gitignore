@@ -4,3 +4,8 @@
 
 # Folders
 data/
+
+# Metadata
+.vscode/
+.jupyter/
+.ipynb/
