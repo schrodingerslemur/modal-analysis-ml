@@ -9,3 +9,4 @@ data/
 .vscode/
 .jupyter/
 .ipynb/
+.ipynb_checkpoints/
