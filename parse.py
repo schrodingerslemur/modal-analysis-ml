@@ -238,6 +238,8 @@ def get_outplane(contents, inplane, tupled_inplane: list[tuple], max_modes):
     return outplane_preds
 
 def plot_sum_graph(mode_no):
+    #  and contents must be defined
+
     node_df = get_node_df(inp_contents)
     mode_df = get_mode_df(contents, mode_no)
     mode_df['resultant'] = np.sqrt(mode_df['U1']**2 + mode_df['U2']**2 + mode_df['U3']**2)
