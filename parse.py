@@ -7,6 +7,36 @@ import pandas as pd
 # - Figure out threshold
 # - Figure out order of magnitude for generalization
 
+### INP FILES: 
+def extract_inp_table(inp_contents: str, start_keyword: str, end_keyword: str):
+    start_index = inp_contents.find(start_keyword)
+    end_index = inp_contents.find(end_keyword)
+
+    start_index += len(start_keyword) + 1
+    extracted_text = inp_contents[start_index:end_index]
+
+    return extracted_text
+
+def get_node_df(inp_contents: str): # from inp file
+    start_keyword = "*NODE"
+    end_keyword = "**HWCOLOR COMP"
+    table = extract_inp_table(inp_contents, start_keyword, end_keyword)
+
+    node_table_df = pd.read_csv(
+        StringIO(table),
+        sep=r'[,\s]+',
+        header=None,
+        names=[
+            'node_no',
+            'x',
+            'y',
+            'z'
+        ]
+    )
+
+    return node_table_df
+
+### DAT FILES:
 def extract_table(contents: str, keyword: str, delim: str ='\n\n\n') -> str:
     """
     Extracts strings consisting of only table values specific for .dat files
@@ -96,6 +126,7 @@ def get_mode_df(contents, mode_number):
 
     return mode_df    
 
+### LOGICAL FUNCTIONS:
 def check_limit(l1, l2, threshold=300):
     errors = 0
     for a in l1:
@@ -133,17 +164,29 @@ def contains_node(mode_df, threshold=7, lower_p_thres=0):
 
 def get_inplane(contents, max_modes):
     inplane_preds = []
+    tupled_inplane_preds = []
 
     for mode_number in range(1, max_modes+1):
         mode_df = get_mode_df(contents, mode_number)
-        _, ip, x, _, z = get_proportions(mode_df, mode_number)
+        oop, ip, x, y, z = get_proportions(mode_df, mode_number)
+
+        print(f"Mode Number: {mode_number}, OOP: {oop}, IP: {ip}, x+z: {x+z}")
         if ip > 96 and (x+z) > 100000: ### TODO: Adjust this number
             if contains_node(mode_df):
                 inplane_preds.append(mode_number)
-    
-    return inplane_preds
 
-def search_oop(contents, start, reverse=False, max_modes = 136):
+                if tupled_inplane_preds and (mode_number - 1 in tupled_inplane_preds[-1]):
+                    # Pop the last tuple, extend it, and re-append
+                    last_tuple = tupled_inplane_preds.pop()
+                    new_tuple = last_tuple + (mode_number,)
+                    tupled_inplane_preds.append(new_tuple)
+                else:
+                    # Start a new tuple group
+                    tupled_inplane_preds.append((mode_number,))
+                    
+    return inplane_preds, tupled_inplane_preds
+
+def search_oop(contents, start, inplane, reverse=False, max_modes = 136):
     """
     Linear search
     """
@@ -157,7 +200,7 @@ def search_oop(contents, start, reverse=False, max_modes = 136):
     while (checks <= 5):
         checks += 1
         start += inc
-        if start == 0 or start == max_modes:
+        if start == 0 or start == max_modes or start in inplane:
             break
 
         mode_df = get_mode_df(contents, start)
@@ -170,20 +213,27 @@ def search_oop(contents, start, reverse=False, max_modes = 136):
 
     if len(oop_values) == 0:
         return None ### TODO: Ensure correct logic
+    elif len(oop_values) < 3:
+        if all(value[-1] < 90 for value in oop_values):
+            return None
     
     largest_oop = max(oop_values, key=lambda x: x[1])
     return largest_oop[0]
 
-def get_outplane(contents, inplane, max_modes):
+def get_outplane(contents, inplane, tupled_inplane: list[tuple], max_modes):
     outplane_preds = []
     
-    for i in range(len(inplane)):
-        if i % 2 == 0:
-            reverse = True
-        else:
-            reverse = False
+    for i in range(len(tupled_inplane)):
+        elem = tupled_inplane[i]
+        # for elem[0]
+        pred_reverse = search_oop(contents, elem[0], inplane, reverse=True, max_modes=max_modes)
+        if pred_reverse: # ensure not None
+            outplane_preds.append(pred_reverse)
         
-        outplane_preds.append(search_oop(contents, inplane[i], reverse=reverse))
+        # for elem[-1]
+        pred_forward = search_oop(contents, elem[-1], inplane, reverse=False, max_modes=max_modes)
+        if pred_forward:
+            outplane_preds.append(pred_forward)
     
     return outplane_preds
 
@@ -237,8 +287,8 @@ def main(dat_file):
     mode_table_df = get_mode_table_df(contents)
     max_modes = mode_table_df['mode_no'].max().item()
 
-    inplane_preds = get_inplane(contents, max_modes)
-    outplane_preds = get_outplane(contents, inplane_preds, max_modes)
+    inplane_preds, tupled_inplane_preds = get_inplane(contents, max_modes)
+    outplane_preds = get_outplane(contents, inplane_preds, tupled_inplane_preds, max_modes)
 
     outplane_preds = sorted(list(set(outplane_preds)))
 
