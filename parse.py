@@ -187,6 +187,48 @@ def get_outplane(contents, inplane, max_modes):
     
     return outplane_preds
 
+def plot_sum_graph(mode_no):
+    node_df = get_node_df(inp_contents)
+    mode_df = get_mode_df(contents, mode_no)
+    mode_df['resultant'] = np.sqrt(mode_df['U1']**2 + mode_df['U2']**2 + mode_df['U3']**2)
+    sum_df = mode_df[['node_no','resultant']] # node and sum
+    merged_df = pd.merge(node_df, sum_df, on='node_no', how='inner')
+    df = merged_df
+    
+    custom_colorscale = [
+        [0.0, '#00008B'],  # dark blue
+        [0.5, '#FFFF00'],  # yellow
+        [1.0, '#FF0000'],  # red
+    ]
+
+    min_val = min(df['x'].min(), df['y'].min(), df['z'].min())
+    max_val = max(df['x'].max(), df['y'].max(), df['z'].max())
+    
+    fig = px.scatter_3d(
+        df,
+        x='x',
+        y='y',
+        z='z',
+        color='resultant',
+        color_continuous_scale=custom_colorscale,
+        size_max=10,
+        hover_data=['node_no', 'resultant']
+    )
+    
+    fig.update_layout(
+        title=f"Mode number ({mode_no})",
+        scene=dict(
+            xaxis_title='X',
+            yaxis_title='Y',
+            zaxis_title='Z',
+            xaxis=dict(range=[min_val, max_val]),
+            yaxis=dict(range=[min_val, max_val]),
+            zaxis=dict(range=[min_val, max_val]),
+        )
+    )
+    
+    fig.show(renderer='browser')
+    
 def main(dat_file):
     # dat_file = "C346RS_frnt_rotor_modal_separation_10Jun25.dat"
     with open(dat_file, "r") as file:
@@ -198,17 +240,20 @@ def main(dat_file):
     inplane_preds = get_inplane(contents, max_modes)
     outplane_preds = get_outplane(contents, inplane_preds, max_modes)
 
-    inplane_labels = [32, 33, 46, 47, 68, 69, 99, 100]
-    outplane_labels = [29, 36, 45, 48, 65, 71, 94, 103]
+    outplane_preds = sorted(list(set(outplane_preds)))
+
+    inplane_labels = [32, 33, 46, 47, 68, 69, 100, 101]
+    outplane_labels = [29, 36, 45, 48, 65, 71, 94, 105]
 
     print(f"inplane predictions: {inplane_preds}")
-    print(f"inplane labels: {inplane_labels}")
+    # print(f"inplane labels: {inplane_labels}")
 
     print(f"outplane predictions: {outplane_preds}")
-    print(f"outplane labels: {outplane_labels}")
+    # print(f"outplane labels: {outplane_labels}")
 
 if __name__ == "__main__":
     # Usage: python parse.py <.dat file path> 
-    # Example: python parse.py data/C346RS_frnt_rotor_modal_separation_10Jun25.dat 
+    # Example: python parse.py data\C346RS_10Jun\C346RS_frnt_rotor_modal_separation_10Jun25.dat
+    # python parse.py 'data/V801_17Jun/V801_frnt_rotor_modal_separation_17Jun25 (1).dat'
     dat_file = sys.argv[1]
     main(dat_file)
