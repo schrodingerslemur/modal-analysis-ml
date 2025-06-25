@@ -11,7 +11,6 @@ class ModalAnalyser:
                  ):
         self.model = model
         self.mode_table = model.mode_table_df
-        print(self.mode_table)
         self.max = model.max_modes
 
         self.ip_thres = ip_thres
@@ -71,23 +70,23 @@ class ModalAnalyser:
         
         inrange_outplane = set()
 
-        freqs = self.mode_table['freq']
-        modes = self.mode_table['mode_no']
+        freqs = self.mode_table.set_index('mode_no')
 
         for mode in self.inplane_modes:
+            curr_freq = freqs.loc[mode].item()
             # Increasing order
             i = 1
-            while mode + i < len(freqs) and freqs[mode+i-1] - freqs[mode-1] <= 300:
-                inrange_outplane.add(modes[mode+i])
+            while (mode + i <= self.max) and (freqs.loc[mode + i].item() - curr_freq <= 300) and (mode + i not in self.inplane_modes):
+                inrange_outplane.add(mode+i)
                 i += 1
-
+            
             # Decreasing order
             j = 1
-            while mode - j > 0 and freqs[mode-1] - freqs[mode-j-1] <= 300:
-                inrange_outplane.add(modes[mode-j])
+            while (mode - j >= 1) and (curr_freq - freqs.loc[mode-j].item() <= 300) and (mode - j not in self.inplane_modes):
+                inrange_outplane.add(mode-j)
                 j += 1
         
-        return inrange_outplane
+        return sorted(list(inrange_outplane))
 
 
         

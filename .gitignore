@@ -11,4 +11,7 @@ data/
 */.ipynb_checkpoints/
 .ipynb_checkpoints/
 */__pycache__/
-main.py
+
+
+# jupyter
+jupyter/
