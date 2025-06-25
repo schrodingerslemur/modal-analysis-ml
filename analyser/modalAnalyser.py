@@ -42,6 +42,42 @@ class ModalAnalyser:
 
         return oop, ip, sumsq_x, sumsq_y, sumsq_z
     
+    def get_vectors(self, n):
+        df = self.model(n, include_node=True)
+        R = np.hypot(df['x'], df['z']) # sqrt(x^2 + z^2)
+        R_safe = R.replace(0, np.nan)
+        
+        # Unit r = (x/R, 0, z/R)
+        r_hat_x = df['x'] / R_safe
+        r_hat_z = df['z'] / R_safe
+        
+        # Unit n = (0, 1, 0)
+        
+        # Unit t = unit n x unit r =  (z/R, 0, -x/R)
+        t_hat_x = r_hat_z
+        t_hat_z = -r_hat_x
+        
+        # Tangential component = U dot t_hat
+        U_t = np.dot(df['U1'], t_hat_x) + np.dot(df['U3'], t_hat_z)
+        # Radial component = U dot r_hat
+        U_r = np.dot(df['U1'], r_hat_x) + np.dot(df['U3'], r_hat_z)
+        # Normal component = U dot n_hat
+        U_n = np.sum(df['U2'])
+
+
+        # Spherical coordinates
+        U_rho = np.sqrt(df['U1']**2 + df['U2']**2 + df['U3']**2)
+        U_theta = np.arctan(df['U3'] / df['U1']).abs().sum()
+        U_phi = np.arctan(df['U2'] / U_rho).abs().sum()
+
+        U_rho = df['U_rho'].sum()
+
+        return U_rho, U_theta, U_phi, U_t, U_r, U_n
+    
+    def is_tangential(self, n):
+        U_rho, U_theta, U_phi, U_t, U_r, U_n = self.get_vectors(n)
+
+
     def contains_node(self, n):
         node_thres = self.node_thres
         lower_p_thres = self.lower_p_thres
