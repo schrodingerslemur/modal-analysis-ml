@@ -64,7 +64,7 @@ class ModalAnalyser:
 
         return inplane_modes
     
-    def get_inrange_outplane(self) -> set:
+    def get_inrange_inplane(self) -> set:
         if not self.inplane_modes:
             raise ValueError("In-plane modes have not been calculated. Please run get_inplane() first.")
         
@@ -87,7 +87,4 @@ class ModalAnalyser:
                 j += 1
         
         return sorted(list(inrange_outplane))
-
-
-        
 
