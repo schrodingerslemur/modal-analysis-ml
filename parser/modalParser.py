@@ -17,6 +17,9 @@ class ModalParser:
             self.node_df = None
 
     def __call__(self, mode_no: int, include_node: bool = False):
+        if mode_no < 1 or mode_no > self.max_modes:
+            raise ValueError(f"mode_no must be between 1 and {self.max_modes}. Provided: {mode_no}")
+        
         if include_node:
             return self.mode_node_df(mode_no)
         else:
