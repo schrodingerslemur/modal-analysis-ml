@@ -8,5 +8,6 @@ data/
 # Metadata
 .vscode/
 .jupyter/
-.ipynb/
+*/.ipynb_checkpoints/
 .ipynb_checkpoints/
+*/__pycache__/

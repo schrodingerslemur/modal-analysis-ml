@@ -1,4 +1,5 @@
 import sys
+import os
 from io import StringIO
 import numpy as np
 import pandas as pd
@@ -238,7 +239,7 @@ def get_outplane(contents, inplane, tupled_inplane: list[tuple], max_modes):
     return outplane_preds
 
 def plot_sum_graph(mode_no):
-    #  and contents must be defined
+    # inp contents and contents must be defined 
 
     node_df = get_node_df(inp_contents)
     mode_df = get_mode_df(contents, mode_no)
@@ -304,8 +305,26 @@ def main(dat_file):
     # print(f"outplane labels: {outplane_labels}")
 
 if __name__ == "__main__":
-    # Usage: python parse.py <.dat file path> 
-    # Example: python parse.py data\C346RS_10Jun\C346RS_frnt_rotor_modal_separation_10Jun25.dat
-    # python parse.py 'data/V801_17Jun/V801_frnt_rotor_modal_separation_17Jun25 (1).dat'
-    dat_file = sys.argv[1]
-    main(dat_file)
+    # Usage:
+    #   python parse.py <.dat file or directory path>
+    #   Example:
+    #     python parse.py data\C346RS_10Jun\C346RS_frnt_rotor_modal_separation_10Jun25.dat
+    #     python parse.py data/V801_17Jun
+
+    if len(sys.argv) < 2:
+        print("Usage: python parse.py <.dat file or directory path>")
+        sys.exit(1)
+
+    path = sys.argv[1]
+
+    if os.path.isfile(path) and path.endswith('.dat'):
+        main(path)
+
+    elif os.path.isdir(path):
+        for root, _, files in os.walk(path):
+            for file in files:
+                if file.endswith('.dat'):
+                    full_path = os.path.join(root, file)
+                    main(full_path)
+    else:
+        print("Error: Path must be a .dat file or a directory containing .dat files.")
