@@ -7,7 +7,7 @@ class ModalParser:
     def __init__(self, dat_file: str, inp_file: str = None):
         self.dat = DATParser(dat_file)
         # Columns: mode_no, freq
-        self.mode_table_df = self.dat.get_mode_table_df
+        self.mode_table_df = self.dat.get_mode_table_df()
         self.max_modes = self.dat.mode_table_df['mode_no'].max().item()
 
         if inp_file:

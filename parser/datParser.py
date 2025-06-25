@@ -5,7 +5,7 @@ class DATParser:
     def __init__(self, dat_file: str):
         self.dat_file = dat_file
         self.contents = self._read_file()
-        self.mode_table_df = self.get_mode_table_df(self.contents)
+        self.mode_table_df = self.get_mode_table_df()
 
     def _read_file(self) -> str:
         if self.dat_file.endswith(".dat"):
@@ -45,13 +45,12 @@ class DATParser:
             table_str = remaining_text[table_start_index:]
         return table_str
 
-    @staticmethod
-    def get_mode_table_df(contents: str) -> pd.DataFrame:
+    def get_mode_table_df(self) -> pd.DataFrame:
         """
         Extracts table [mode_no, freq] from extracted string
         """
         keyword = 'E I G E N V A L U E    O U T P U T'
-        table = DATParser.extract_str(contents, keyword)
+        table = self.extract_str(self.contents, keyword)
         mode_table_df = pd.read_csv(
             StringIO(table),
             sep=r'\s+',

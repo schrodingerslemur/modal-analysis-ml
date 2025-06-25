@@ -11,6 +11,7 @@ class ModalAnalyser:
                  ):
         self.model = model
         self.mode_table = model.mode_table_df
+        print(self.mode_table)
         self.max = model.max_modes
 
         self.ip_thres = ip_thres
@@ -58,8 +59,36 @@ class ModalAnalyser:
             if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n):
                 inplane_modes.append(n)
 
+        if self.inplane_modes:
+            print("Overwriting previously calculated inplane modes...")
         self.inplane_modes = inplane_modes
+
         return inplane_modes
     
-    def get_inrange_outplane(self):
-        pass
+    def get_inrange_outplane(self) -> set:
+        if not self.inplane_modes:
+            raise ValueError("In-plane modes have not been calculated. Please run get_inplane() first.")
+        
+        inrange_outplane = set()
+
+        freqs = self.mode_table['freq']
+        modes = self.mode_table['mode_no']
+
+        for mode in self.inplane_modes:
+            # Increasing order
+            i = 1
+            while mode + i < len(freqs) and freqs[mode+i-1] - freqs[mode-1] <= 300:
+                inrange_outplane.add(modes[mode+i])
+                i += 1
+
+            # Decreasing order
+            j = 1
+            while mode - j > 0 and freqs[mode-1] - freqs[mode-j-1] <= 300:
+                inrange_outplane.add(modes[mode-j])
+                j += 1
+        
+        return inrange_outplane
+
+
+        
+
