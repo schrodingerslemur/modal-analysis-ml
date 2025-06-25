@@ -8,7 +8,7 @@ class ModalParser:
         self.dat = DATParser(dat_file)
         # Columns: mode_no, freq
         self.mode_table_df = self.dat.get_mode_table_df
-        self.max_modes = self.mode_table_df['mode_no'].max().item()
+        self.max_modes = self.dat.mode_table_df['mode_no'].max().item()
 
         if inp_file:
             # Columns: node_no, x, y, z
