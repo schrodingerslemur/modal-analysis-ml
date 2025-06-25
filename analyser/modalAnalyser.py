@@ -17,6 +17,7 @@ class ModalAnalyser:
         self.node_thres = node_thres
         self.lower_p_thres = lower_p_thres
         self.sumxz_thres = sumxz_thres
+        self.near_inplane_thres = near_inplane_thres
 
         self.inplane_modes = None
         self.near_inplane_modes = None
@@ -76,13 +77,13 @@ class ModalAnalyser:
             curr_freq = freqs.loc[mode].item()
             # Increasing order
             i = 1
-            while (mode + i <= self.max) and (freqs.loc[mode + i].item() - curr_freq <= 300) and (mode + i not in self.inplane_modes):
+            while (mode + i <= self.max) and (freqs.loc[mode + i].item() - curr_freq <= self.near_inplane_thres) and (mode + i not in self.inplane_modes):
                 inrange_outplane.add(mode+i)
                 i += 1
             
             # Decreasing order
             j = 1
-            while (mode - j >= 1) and (curr_freq - freqs.loc[mode-j].item() <= 300) and (mode - j not in self.inplane_modes):
+            while (mode - j >= 1) and (curr_freq - freqs.loc[mode-j].item() <= self.near_inplane_thres) and (mode - j not in self.inplane_modes):
                 inrange_outplane.add(mode-j)
                 j += 1
         

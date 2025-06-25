@@ -12,11 +12,15 @@ import plotly.express as px
 from parser.modalParser import ModalParser
 from analyser.modalAnalyser import ModalAnalyser
 
-dat_file = "../data/C346RS_10Jun/C346RS_frnt_rotor_modal_separation_10Jun25.dat"
-inp_file = "../data/C346RS_10Jun/C346RS_frnt_rotor_modal_separation_10Jun25.inp"
-model=ModalParser(dat_file, inp_file)
+def main():
+    dat_file = "../data/C346RS_10Jun/C346RS_frnt_rotor_modal_separation_10Jun25.dat"
+    inp_file = "../data/C346RS_10Jun/C346RS_frnt_rotor_modal_separation_10Jun25.inp"
+    model=ModalParser(dat_file, inp_file)
 
-analyser = ModalAnalyser(model)
-print(model.mode_table_df)
-print(analyser.get_inplane())
-print(analyser.get_inrange_outplane())
+    analyser = ModalAnalyser(model)
+    print(model.mode_table_df)
+    print(analyser.get_inplane())
+    print(analyser.get_inrange_inplane())
+
+if __name__ == "__main__":
+    main()
