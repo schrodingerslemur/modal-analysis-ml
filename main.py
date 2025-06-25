@@ -1,9 +1,4 @@
-import sys
-import os 
-
-from io import StringIO
-import numpy as np
-import pandas as pd
+import argparse
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -11,17 +6,21 @@ import plotly.express as px
 
 from parser.modalParser import ModalParser
 from analyser.modalAnalyser import ModalAnalyser
-import argparse
 
 def main(dat_file, inp_file):
-    print(inp_file)
-    exit()
     model=ModalParser(dat_file, inp_file)
-
     analyser = ModalAnalyser(model)
-    print(model.mode_table_df)
+    print("inplane modes:")
     print(analyser.get_inplane())
-    print(analyser.get_inrange_inplane())
+    print("checking these for outplane:")
+    print(analyser.get_near_inplane())
+
+    passed = analyser.check()
+
+    if passed:
+        print("passed") 
+    else:
+        print("did not pass")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run modal analysis.")
@@ -33,3 +32,10 @@ if __name__ == "__main__":
     inp_file = args.inp_file
 
     main(dat_file, inp_file)
+
+"""# dat:..\data\03_V363\03_V363_Rotor.dat
+..\data\04_V769\04_V769_Rotor.dat
+..\data\05_V363\05_V363_Rotor_dsg2.dat
+..\data\C346RS_10Jun\C346RS_frnt_rotor_modal_separation_10Jun25.dat
+..\data\V801_17Jun\V801_frnt_rotor_modal_separation_17Jun25.dat
+""" 

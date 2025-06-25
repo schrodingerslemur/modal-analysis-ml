@@ -4,6 +4,7 @@ class ModalAnalyser:
     def __init__(self, 
                  model, 
                  ip_thres=96, 
+                 oop_thres=95,
                  sumxz_thres=1e5, 
                  node_thres=7, 
                  lower_p_thres=0,
@@ -14,13 +15,14 @@ class ModalAnalyser:
         self.max = model.max_modes
 
         self.ip_thres = ip_thres
+        self.oop_thres = oop_thres
         self.node_thres = node_thres
         self.lower_p_thres = lower_p_thres
         self.sumxz_thres = sumxz_thres
         self.near_inplane_thres = near_inplane_thres
 
         self.inplane_modes = None
-        self.near_inplane_modes = None
+        self.near_inplane = None
     
     # n represents mode number
     def get_proportions(self, n):
@@ -35,7 +37,7 @@ class ModalAnalyser:
         sumsq_y = sq_y.sum()
         sumsq_z = sq_z.sum()
 
-        total_energy = sumsq_x + sumsq_y + sumsq_z
+        total_energy = (sumsq_x + sumsq_y + sumsq_z)
 
         oop = ((sumsq_y) / total_energy) * 100
         ip = ((sumsq_x + sumsq_z) / total_energy) * 100
@@ -63,7 +65,6 @@ class ModalAnalyser:
         U_r = np.dot(df['U1'], r_hat_x) + np.dot(df['U3'], r_hat_z)
         # Normal component = U dot n_hat
         U_n = np.sum(df['U2'])
-
 
         # Spherical coordinates
         U_rho = np.sqrt(df['U1']**2 + df['U2']**2 + df['U3']**2)
@@ -101,11 +102,11 @@ class ModalAnalyser:
 
         return inplane_modes
     
-    def get_inrange_inplane(self) -> set:
+    def get_near_inplane(self) -> set:
         if not self.inplane_modes:
             raise ValueError("In-plane modes have not been calculated. Please run get_inplane() first.")
         
-        inrange_outplane = set()
+        near_inplane = set()
 
         freqs = self.mode_table.set_index('mode_no')
 
@@ -114,14 +115,29 @@ class ModalAnalyser:
             # Increasing order
             i = 1
             while (mode + i <= self.max) and (freqs.loc[mode + i].item() - curr_freq <= self.near_inplane_thres) and (mode + i not in self.inplane_modes):
-                inrange_outplane.add(mode+i)
+                near_inplane.add(mode+i)
                 i += 1
             
             # Decreasing order
             j = 1
             while (mode - j >= 1) and (curr_freq - freqs.loc[mode-j].item() <= self.near_inplane_thres) and (mode - j not in self.inplane_modes):
-                inrange_outplane.add(mode-j)
+                near_inplane.add(mode-j)
                 j += 1
         
-        return sorted(list(inrange_outplane))
+        if self.near_inplane:
+            print("Overwriting previously calculated NEAR inplane modes")
 
+        self.near_inplane = sorted(list(near_inplane))
+        return self.near_inplane
+    
+    def is_outplane(self, n: int) -> bool:
+        oop, ip, x, y, z = self.get_proportions(n)
+        if oop > self.oop_thres:
+            return True
+        return False
+    
+    def check(self) -> bool:
+        for potential_oop in self.near_inplane:
+            if self.is_outplane(potential_oop):
+                return False
+        return True
