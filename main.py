@@ -1,11 +1,7 @@
 import argparse
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import plotly.express as px
-
-from parser.modalParser import ModalParser
-from analyser.modalAnalyser import ModalAnalyser
+from src.parser.modalParser import ModalParser
+from src.analyser.modalAnalyser import ModalAnalyser
 
 def main(dat_file, inp_file):
     model=ModalParser(dat_file, inp_file)
@@ -32,10 +28,3 @@ if __name__ == "__main__":
     inp_file = args.inp_file
 
     main(dat_file, inp_file)
-
-"""# dat:..\data\03_V363\03_V363_Rotor.dat
-..\data\04_V769\04_V769_Rotor.dat
-..\data\05_V363\05_V363_Rotor_dsg2.dat
-..\data\C346RS_10Jun\C346RS_frnt_rotor_modal_separation_10Jun25.dat
-..\data\V801_17Jun\V801_frnt_rotor_modal_separation_17Jun25.dat
-""" 

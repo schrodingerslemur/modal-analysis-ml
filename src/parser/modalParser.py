@@ -1,7 +1,7 @@
 import pandas as pd
 
-from parser.datParser import DATParser
-from parser.inpParser import INPParser
+from src.parser.datParser import DATParser
+from src.parser.inpParser import INPParser
     
 class ModalParser:
     def __init__(self, dat_file: str, inp_file: str = None):
