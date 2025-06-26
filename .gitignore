@@ -12,6 +12,8 @@ data/
 .ipynb_checkpoints/
 */__pycache__/
 
+# venv
+venv/
 
 # jupyter
 jupyter/
