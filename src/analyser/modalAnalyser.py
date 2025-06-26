@@ -113,6 +113,7 @@ class ModalAnalyser:
         Et  = np.sum(u_t**2)
         ratio = Et / Er
 
+        print(n, ratio)
         if ratio > tang_ratio_thres:
             return True
         elif ratio < 1/tang_ratio_thres:
