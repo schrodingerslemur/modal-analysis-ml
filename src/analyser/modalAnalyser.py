@@ -40,12 +40,14 @@ class ModalAnalyser:
         sumsq_y = sq_y.sum()
         sumsq_z = sq_z.sum()
 
+        resultant = np.sqrt(sq_x + sq_y + sq_z).sum()
+
         total_energy = (sumsq_x + sumsq_y + sumsq_z)
 
         oop = ((sumsq_y) / total_energy) * 100
         ip = ((sumsq_x + sumsq_z) / total_energy) * 100
 
-        return oop, ip, sumsq_x, sumsq_y, sumsq_z
+        return oop, ip, sumsq_x, sumsq_y, sumsq_z, resultant
     
     def get_vectors(self, n, spherical_only=False):
         if spherical_only:
@@ -179,18 +181,18 @@ class ModalAnalyser:
         if not tangential:
             print('not tangential')
             for n in range(1, self.max + 1):
-                oop, ip, x, y, z = self.get_proportions(n)
+                oop, ip, x, y, z, _ = self.get_proportions(n)
                 if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n) and self.is_tangential(n):
                     inplane_modes.append(n)
         else:
             print('tangential')
             for n in range(1, self.max + 1):
-                if self.is_tangential(n): # TODO: possibly add x + z > 200000
+                oop, ip, x, y, z, res = self.get_proportions(n)
+                if self.is_tangential(n) and x+z > 350000: # TODO: possibly add x + z > 300000
                     flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
                     if not flag:
-                        print(n, flag)
-                        _, _, x, y, z = self.get_proportions(n)
                         print(f"Mode {n}: x={x}, y={y}, z={z}, x+z: {x+z}")
+                        print(f"rho: {rho}, res: {res}")
                         inplane_modes.append(n)
 
         if self.inplane_modes:
@@ -228,7 +230,7 @@ class ModalAnalyser:
         return self.near_inplane
     
     def is_outplane(self, n: int) -> bool:
-        oop, ip, x, y, z = self.get_proportions(n)
+        oop, ip, x, y, z, _ = self.get_proportions(n)
         if oop > self.oop_thres:
             print(n, 'oop:', oop, "failed")
             return True
