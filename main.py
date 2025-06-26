@@ -6,12 +6,7 @@ from src.analyser.modalAnalyser import ModalAnalyser
 def main(dat_file, inp_file):
     model=ModalParser(dat_file, inp_file)
     analyser = ModalAnalyser(model)
-    print("inplane modes:")
-    print(analyser.get_inplane())
-    print("checking these for outplane:")
-    print(analyser.get_near_inplane())
-
-    passed = analyser.check()
+    passed = analyser.check(tangential=True)
 
     if passed:
         print("passed") 
@@ -28,3 +23,4 @@ if __name__ == "__main__":
     inp_file = args.inp_file
 
     main(dat_file, inp_file)
+

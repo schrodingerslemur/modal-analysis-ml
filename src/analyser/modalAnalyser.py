@@ -25,6 +25,7 @@ class ModalAnalyser:
 
         self.inplane_modes = None
         self.near_inplane = None
+        self.outplane_modes = None
     
     # n represents mode number
     def get_proportions(self, n):
@@ -160,8 +161,8 @@ class ModalAnalyser:
         rms  = np.sqrt(np.mean(u_t**2))
         rho  = 0.0 if rms == 0 else abs(np.mean(u_t)) / rms
 
-        flag = rho > rigid_ratio_thres
-        return (flag, rho) if return_ratio else flag
+        flag = bool(rho > rigid_ratio_thres)
+        return (flag, float(rho)) if return_ratio else flag
     
     def contains_node(self, n):
         node_thres = self.node_thres
@@ -176,15 +177,21 @@ class ModalAnalyser:
         inplane_modes = []
 
         if not tangential:
+            print('not tangential')
             for n in range(1, self.max + 1):
                 oop, ip, x, y, z = self.get_proportions(n)
                 if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n) and self.is_tangential(n):
                     inplane_modes.append(n)
         else:
+            print('tangential')
             for n in range(1, self.max + 1):
-                if self.is_tangential(n) and not self.is_rigid_rotation(n):
-                    inplane_modes.append(n)
-
+                if self.is_tangential(n): # TODO: possibly add x + z > 200000
+                    flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
+                    if not flag:
+                        print(n, flag)
+                        _, _, x, y, z = self.get_proportions(n)
+                        print(f"Mode {n}: x={x}, y={y}, z={z}, x+z: {x+z}")
+                        inplane_modes.append(n)
 
         if self.inplane_modes:
             print("Overwriting previously calculated inplane modes...")
@@ -223,7 +230,7 @@ class ModalAnalyser:
     def is_outplane(self, n: int) -> bool:
         oop, ip, x, y, z = self.get_proportions(n)
         if oop > self.oop_thres:
-            print(n, 'oop:', oop, "passed")
+            print(n, 'oop:', oop, "failed")
             return True
         print(n, 'oop:', oop, "passed")
         return False
@@ -239,9 +246,12 @@ class ModalAnalyser:
 
         print("Near in-plane modes:", self.near_inplane)
 
+        self.outplane_modes = []
         for potential_oop in self.near_inplane:
             if self.is_outplane(potential_oop):
-                print('failed here')
+                self.outplane_modes.append(potential_oop)
+
+        print("Out-of-plane modes:", self.outplane_modes)
         return True
 
 
