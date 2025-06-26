@@ -4,8 +4,9 @@ class ModalAnalyser:
     def __init__(self, 
                  model, 
                  ip_thres=96, 
-                 oop_thres=95,
+                 oop_thres=90,
                  sumxz_thres=1e5, 
+                 min_res_thres=2,
                  node_thres=7, 
                  lower_p_thres=0,
                  near_inplane_thres=300
@@ -18,6 +19,7 @@ class ModalAnalyser:
         self.oop_thres = oop_thres
         self.node_thres = node_thres
         self.lower_p_thres = lower_p_thres
+        self.min_res_thres = min_res_thres
         self.sumxz_thres = sumxz_thres
         self.near_inplane_thres = near_inplane_thres
 
@@ -44,41 +46,123 @@ class ModalAnalyser:
 
         return oop, ip, sumsq_x, sumsq_y, sumsq_z
     
-    def get_vectors(self, n):
-        df = self.model(n, include_node=True)
-        R = np.hypot(df['x'], df['z']) # sqrt(x^2 + z^2)
-        R_safe = R.replace(0, np.nan)
-        
-        # Unit r = (x/R, 0, z/R)
-        r_hat_x = df['x'] / R_safe
-        r_hat_z = df['z'] / R_safe
-        
-        # Unit n = (0, 1, 0)
-        
-        # Unit t = unit n x unit r =  (z/R, 0, -x/R)
-        t_hat_x = r_hat_z
-        t_hat_z = -r_hat_x
-        
-        # Tangential component = U dot t_hat
-        U_t = np.dot(df['U1'], t_hat_x) + np.dot(df['U3'], t_hat_z)
-        # Radial component = U dot r_hat
-        U_r = np.dot(df['U1'], r_hat_x) + np.dot(df['U3'], r_hat_z)
-        # Normal component = U dot n_hat
-        U_n = np.sum(df['U2'])
+    def get_vectors(self, n, spherical_only=False):
+        if spherical_only:
+            df = self.model(n)
+        else:
+            df = self.model(n, include_node=True)
 
-        # Spherical coordinates
         U_rho = np.sqrt(df['U1']**2 + df['U2']**2 + df['U3']**2)
-        U_theta = np.arctan(df['U3'] / df['U1']).abs().sum()
-        U_phi = np.arctan(df['U2'] / U_rho).abs().sum()
+        U_theta = np.arctan2(df['U3'], df['U1']).abs().sum()
+        U_phi = np.arctan2(df['U2'], U_rho).abs().sum()
+        U_rho_sum = U_rho.sum()
 
-        U_rho = df['U_rho'].sum()
+        if spherical_only:
+            print(f"U_rho: {U_rho_sum}, U_theta: {U_theta}, U_phi: {U_phi}")
+            print(f"U_theta / (U_theta + U_rho): {U_theta*100 / (U_theta + U_rho_sum)}")
+            return U_rho_sum, U_theta, U_phi
+        else:
+            R = np.hypot(df['x'], df['z'])  # sqrt(x^2 + z^2)
+            R_safe = R.replace(0, np.nan)
 
-        return U_rho, U_theta, U_phi, U_t, U_r, U_n
+            # Unit r = (x/R, 0, z/R)
+            r_hat_x = df['x'] / R_safe
+            r_hat_z = df['z'] / R_safe
+
+            # Unit t = unit n x unit r =  (z/R, 0, -x/R)
+            t_hat_x = r_hat_z
+            t_hat_z = -r_hat_x
+
+            # Tangential component = U dot t_hat
+            U_t = np.dot(df['U1'], t_hat_x.fillna(0)) + np.dot(df['U3'], t_hat_z.fillna(0))
+            # Radial component = U dot r_hat
+            U_r = np.dot(df['U1'], r_hat_x.fillna(0)) + np.dot(df['U3'], r_hat_z.fillna(0))
+            # Normal component = U dot n_hat
+            U_n = np.sum(df['U2'].abs())
+
+            print(f"U_rho: {U_rho_sum}, U_theta: {U_theta}, U_phi: {U_phi}, U_t: {U_t}, U_r: {U_r}, U_n: {U_n}")
+            return U_rho_sum, U_theta, U_phi, U_t, U_r, U_n
+
+    def get_min_resultant(self, n: int):
+        df = self.model(n)
+        resultant = np.hypot(df['U1'], df['U3'])
+        # print(f"Mean resultant: {resultant.mean()}")
+        # print(f"Standard deviation: {resultant.std()}")
+        # print(f"Min resultant: {resultant.min()}")
+        # print(f"Max resultant: {resultant.max()}")
+        # print(f"Resultant range: {resultant.max()-resultant.min()}")
+        return resultant.min()
     
-    def is_tangential(self, n):
-        U_rho, U_theta, U_phi, U_t, U_r, U_n = self.get_vectors(n)
+    def is_tangential(self, n, ctr_x=0.0, ctr_z=0.0,
+                            tang_ratio_thres=5.0):          # Et/Er threshold
+        node_df = self.model(1, include_node=True)
+        r_vec   = np.stack([node_df.x-ctr_x, 0*node_df.x, node_df.z-ctr_z]).T
+        r_len   = np.linalg.norm(r_vec, axis=1)
+        r_hat   = (r_vec.T / r_len).T                       # shape (N,3)
+        t_hat   = np.cross(np.array([0,1,0]), r_hat)        # (N,3)
 
+        df = self.model(n)     
+        U  = np.stack([df.U1, df.U2, df.U3]).T         
+        u_r = np.sum(U * r_hat, axis=1)             
+        u_t = np.sum(U * t_hat, axis=1)
 
+        Er  = np.sum(u_r**2)
+        Et  = np.sum(u_t**2)
+        ratio = Et / Er
+
+        if ratio > tang_ratio_thres:
+            return True
+        elif ratio < 1/tang_ratio_thres:
+            return False
+        else:
+            return False
+
+    def is_rigid_rotation(self, n,
+                      ctr_x=0.0, ctr_z=0.0,
+                      rigid_ratio_thres=0.1,
+                      return_ratio=False):
+        """
+        True  → every rim node moves tangentially in the *same* direction
+                (clockwise or anti-clockwise)  ⇒ rigid-body whirl.
+
+        Parameters
+        ----------
+        model : callable
+            model(n, include_node=True) must return a DataFrame with columns
+            x, y, z, U1, U2, U3 (same node order for every mode).
+        n : int
+            Mode number to test.
+        ctr_x, ctr_z : float
+            X-Z coordinates of the rotor centre.
+        rigid_ratio_thres : float
+            Threshold for  ρ = |mean(u_t)| / rms(u_t).
+            ρ ≈ 1 ⇒ rigid rotation,  ρ ≈ 0 ⇒ standing wave.
+        return_ratio : bool
+            If True also return the computed ρ.
+
+        Returns
+        -------
+        bool   (and optionally float)
+            Flag indicating rigid rotation  (and the value of ρ if requested).
+        """
+        df = self.model(n, include_node=True)
+
+        # local unit tangential vector t̂ = n̂ × r̂ (n̂ = +Y)
+        rx = df['x'] - ctr_x
+        rz = df['z'] - ctr_z
+        r_len = np.hypot(rx, rz)
+        t_hat_x =  np.nan_to_num( rz / r_len)
+        t_hat_z = -np.nan_to_num( rx / r_len)
+
+        # tangential component
+        u_t = df['U1']*t_hat_x + df['U3']*t_hat_z
+
+        rms  = np.sqrt(np.mean(u_t**2))
+        rho  = 0.0 if rms == 0 else abs(np.mean(u_t)) / rms
+
+        flag = rho > rigid_ratio_thres
+        return (flag, rho) if return_ratio else flag
+    
     def contains_node(self, n):
         node_thres = self.node_thres
         lower_p_thres = self.lower_p_thres
@@ -88,13 +172,19 @@ class ModalAnalyser:
         zero_proportion = (resultant < node_thres).sum() / len(mode_df)
         return zero_proportion > lower_p_thres
     
-    def get_inplane(self):
+    def get_inplane(self, tangential=False):
         inplane_modes = []
 
-        for n in range(1, self.max + 1):
-            oop, ip, x, y, z = self.get_proportions(n)
-            if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n):
-                inplane_modes.append(n)
+        if not tangential:
+            for n in range(1, self.max + 1):
+                oop, ip, x, y, z = self.get_proportions(n)
+                if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n) and self.is_tangential(n):
+                    inplane_modes.append(n)
+        else:
+            for n in range(1, self.max + 1):
+                if self.is_tangential(n) and not self.is_rigid_rotation(n):
+                    inplane_modes.append(n)
+
 
         if self.inplane_modes:
             print("Overwriting previously calculated inplane modes...")
@@ -133,11 +223,41 @@ class ModalAnalyser:
     def is_outplane(self, n: int) -> bool:
         oop, ip, x, y, z = self.get_proportions(n)
         if oop > self.oop_thres:
+            print(n, 'oop:', oop, "passed")
             return True
+        print(n, 'oop:', oop, "passed")
         return False
     
-    def check(self) -> bool:
+    def check(self, tangential=False) -> bool:
+        if not self.inplane_modes:
+            self.get_inplane(tangential=tangential)
+        
+        print("In-plane modes:", self.inplane_modes)
+
+        if not self.near_inplane:
+            self.get_near_inplane()
+
+        print("Near in-plane modes:", self.near_inplane)
+
         for potential_oop in self.near_inplane:
             if self.is_outplane(potential_oop):
-                return False
+                print('failed here')
         return True
+
+
+    ## HELPER:
+    def iterate(self, func, params=None, modes=None) -> None:
+        if modes is None:
+            modes = range(1, self.max + 1)
+        for n in modes:
+            print(n)
+            if params is not None:
+                if isinstance(params, dict):
+                    func(n, **params)
+                elif isinstance(params, (list, tuple)):
+                    func(n, *params)
+                else:
+                    func(n, params)
+            else:
+                func(n)
+    
