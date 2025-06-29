@@ -1,7 +1,7 @@
 import argparse
 
-from src.parser.modalParser import ModalParser
-from src.analyser.modalAnalyser import ModalAnalyser
+from core.parser.modalParser import ModalParser
+from core.analyser.modalAnalyser import ModalAnalyser
 
 def main(dat_file, inp_file):
     model=ModalParser(dat_file, inp_file)
