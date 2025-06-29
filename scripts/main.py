@@ -1,4 +1,6 @@
 import argparse
+import sys
+import os 
 
 from core.parser.modalParser import ModalParser
 from core.analyser.modalAnalyser import ModalAnalyser
