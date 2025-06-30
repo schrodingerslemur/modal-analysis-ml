@@ -1,6 +1,6 @@
 import os
-from flask import request, jsonify, current_app
-from werkzeug.utils import secure_filename
+from flask import request, jsonify, current_app #type:ignore
+from werkzeug.utils import secure_filename #type:ignore
 from scripts.main import main  
 
 def register_routes(app):
