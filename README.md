@@ -2,6 +2,13 @@
 
 This tool runs modal analysis on your data files.
 
+TODO: 
+- Check on 5 more models
+- API reference
+- App run reference
+- Push backend
+- Implement CD/CI pipeline
+
 ## Requirements
 Install requirements first:
 ```bash
@@ -20,9 +27,3 @@ or
 ```bash
 python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
 ```
-
-TODO: 
-- API reference
-- App run reference
-- Push backend
-- Implement CD/CI pipeline
