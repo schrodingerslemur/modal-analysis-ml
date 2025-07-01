@@ -61,8 +61,6 @@ class ModalAnalyser:
         U_rho_sum = U_rho.sum()
 
         if spherical_only:
-            print(f"U_rho: {U_rho_sum}, U_theta: {U_theta}, U_phi: {U_phi}")
-            print(f"U_theta / (U_theta + U_rho): {U_theta*100 / (U_theta + U_rho_sum)}")
             return U_rho_sum, U_theta, U_phi
         else:
             R = np.hypot(df['x'], df['z'])  # sqrt(x^2 + z^2)
@@ -83,7 +81,6 @@ class ModalAnalyser:
             # Normal component = U dot n_hat
             U_n = np.sum(df['U2'].abs())
 
-            print(f"U_rho: {U_rho_sum}, U_theta: {U_theta}, U_phi: {U_phi}, U_t: {U_t}, U_r: {U_r}, U_n: {U_n}")
             return U_rho_sum, U_theta, U_phi, U_t, U_r, U_n
 
     def get_min_resultant(self, n: int):
@@ -111,7 +108,6 @@ class ModalAnalyser:
         Et  = np.sum(u_t**2)
         ratio = Et / Er
 
-        # print(n, ratio)
         if ratio > tang_ratio_thres:
             return True
         elif ratio < 1/tang_ratio_thres:
@@ -229,9 +225,7 @@ class ModalAnalyser:
     def is_outplane(self, n: int) -> bool:
         oop, ip, x, y, z, _ = self.get_proportions(n)
         if oop > self.oop_thres:
-            print(n, 'oop:', oop, "failed")
             return True
-        print(n, 'oop:', oop, "passed")
         return False
     
     def check(self) -> bool:
