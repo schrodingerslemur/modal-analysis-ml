@@ -102,7 +102,7 @@ $$
 \sum \left(U_1^2 + U_3^2\right) > 2 \cdot \mathrm{mean}\left(U_1^2 + U_3^2\right)
 $$
 
-
+# For development/updating purposes:
 # Setup
 ### Github
 1. Open terminal and setup your ssh keys:
