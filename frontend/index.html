@@ -3,15 +3,70 @@
 <head>
   <meta charset="utf-8">
   <title>Brake Rotor Predictor</title>
+  <style>
+    /* Hidden by default */
+    #loadingOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 1000;
+      text-align: center;
+    }
+    /* Center spinner vertically/horizontally */
+    #loadingOverlay .spinner {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      font-weight: bold;
+      color: #555;
+    }
+
+    /* Simple CSS spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    .spinner-icon {
+      border: 4px solid #ccc;
+      border-top: 4px solid #333;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px auto;
+    }
+  </style>
 </head>
 <body>
   <h2>Upload Rotor Data</h2>
-  <form action="{{ url_for('predict') }}"
+  <form id="uploadForm"
+        action="{{ url_for('predict') }}"
         method="POST"
         enctype="multipart/form-data">
-    .dat file (displacements): <input type="file" name="dat_file"><br>
+
+    .dat file (displacements): <input type="file" name="dat_file" required><br>
     .inp file (positions): <input type="file" name="inp_file"><br><br>
     <input type="submit" value="Submit">
   </form>
+
+  <!-- Loading overlay hidden initially -->
+  <div id="loadingOverlay">
+    <div class="spinner">
+      <div class="spinner-icon"></div>
+      Processing, please wait...
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    form.addEventListener('submit', function() {
+      // Show the overlay when form is submitted
+      loadingOverlay.style.display = 'block';
+    });
+  </script>
 </body>
 </html>
