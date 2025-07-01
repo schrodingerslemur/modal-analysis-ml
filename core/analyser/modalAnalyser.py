@@ -76,7 +76,7 @@ class ModalAnalyser:
         Returns:
         bool: True if the mode is tangential, False otherwise.
         """
-        df = self.model(n, include_node=True)
+        df = self.model(n)
         ctr_x = df.x.mean()
         ctr_z = df.z.mean()
         
@@ -113,7 +113,7 @@ class ModalAnalyser:
         Returns:
         bool: True if the mode is undergoing rigid body rotation, False otherwise.
         """
-        df = self.model(n, include_node=True)
+        df = self.model(n)
 
         ctr_x = df['x'].mean()
         ctr_z = df['z'].mean()
