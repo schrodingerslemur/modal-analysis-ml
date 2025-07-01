@@ -89,16 +89,14 @@ class ModalAnalyser:
     def get_min_resultant(self, n: int):
         df = self.model(n)
         resultant = np.hypot(df['U1'], df['U3'])
-        # print(f"Mean resultant: {resultant.mean()}")
-        # print(f"Standard deviation: {resultant.std()}")
-        # print(f"Min resultant: {resultant.min()}")
-        # print(f"Max resultant: {resultant.max()}")
-        # print(f"Resultant range: {resultant.max()-resultant.min()}")
         return resultant.min()
     
-    def is_tangential(self, n, ctr_x=0.0, ctr_z=0.0,
-                            tang_ratio_thres=5.0):          # Et/Er threshold
+    def is_tangential(self, n, tang_ratio_thres=5.0):          # Et/Er threshold
         node_df = self.model(1, include_node=True)
+
+        ctr_x = node_df.x.mean()
+        ctr_z = node_df.z.mean()
+        
         r_vec   = np.stack([node_df.x-ctr_x, 0*node_df.x, node_df.z-ctr_z]).T
         r_len   = np.linalg.norm(r_vec, axis=1)
         r_hat   = (r_vec.T / r_len).T                       # shape (N,3)
@@ -151,6 +149,9 @@ class ModalAnalyser:
         """
         df = self.model(n, include_node=True)
 
+        ctr_x = df['x'].mean()
+        ctr_z = df['z'].mean()
+
         # local unit tangential vector t̂ = n̂ × r̂ (n̂ = +Y)
         rx = df['x'] - ctr_x
         rz = df['z'] - ctr_z
@@ -189,6 +190,7 @@ class ModalAnalyser:
             print('tangential')
             for n in range(1, self.max + 1):
                 oop, ip, x, y, z, res = self.get_proportions(n)
+                print('ip', ip)
                 if self.is_tangential(n) and x+z > 350000: # TODO: possibly add x + z > 300000
                     flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
                     if not flag:
