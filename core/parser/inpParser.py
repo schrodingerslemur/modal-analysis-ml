@@ -2,6 +2,21 @@ from io import StringIO
 import pandas as pd
 
 class INPParser:
+    """
+    INPParser is a utility class for parsing Abaqus .inp files to extract node information.
+    This class provides methods to:
+    - Read the contents of an Abaqus .inp file.
+    - Extract the node table section from the file based on specific keywords.
+    - Convert the extracted node table string into a pandas DataFrame with columns for node number and coordinates (x, y, z).
+    Attributes:
+        inp_file (str): Path to the .inp file to be parsed.
+        contents (str): The full contents of the .inp file as a string.
+        node_df (pd.DataFrame): DataFrame ['node_no', 'x', 'y', 'z']
+    Methods:
+        _read_file(): Reads the .inp file and returns its contents as a string.
+        extract_str(inp_contents, start_keyword, end_keyword): Extracts a substring between two keywords from the file contents.
+        str_to_df(contents): Converts the extracted node table string into a pandas DataFrame -> ['node_no', 'x', 'y', 'z']
+    """
     def __init__(self, inp_file: str):
         self.inp_file = inp_file
         self.contents = self._read_file()
