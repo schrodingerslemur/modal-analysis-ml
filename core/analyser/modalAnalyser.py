@@ -177,7 +177,7 @@ class ModalAnalyser:
         zero_proportion = (resultant < node_thres).sum() / len(mode_df)
         return zero_proportion > lower_p_thres
     
-    def get_inplane(self, tangential=False):
+    def get_inplane(self):
         inplane_modes = []
         xz = []
 
@@ -234,9 +234,9 @@ class ModalAnalyser:
         print(n, 'oop:', oop, "passed")
         return False
     
-    def check(self, tangential=False) -> bool:
+    def check(self) -> bool:
         if not self.inplane_modes:
-            self.get_inplane(tangential=tangential)
+            self.get_inplane()
         
         print("In-plane modes:", self.inplane_modes)
 
