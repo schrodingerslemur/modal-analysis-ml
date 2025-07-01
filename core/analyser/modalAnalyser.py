@@ -111,7 +111,7 @@ class ModalAnalyser:
         Et  = np.sum(u_t**2)
         ratio = Et / Er
 
-        print(n, ratio)
+        # print(n, ratio)
         if ratio > tang_ratio_thres:
             return True
         elif ratio < 1/tang_ratio_thres:
@@ -188,15 +188,20 @@ class ModalAnalyser:
                     inplane_modes.append(n)
         else:
             print('tangential')
+            xz = []
             for n in range(1, self.max + 1):
                 oop, ip, x, y, z, res = self.get_proportions(n)
-                if self.is_tangential(n) and x+z > 350000: # TODO: possibly add x + z > 300000
+                xz.append(x+z)
+                if self.is_tangential(n) and (print(n, "x+z:", x+z) or True): # TODO: ideal: 350000  or x+z > 200000
                     flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
                     if not flag:
-                        print(f"Mode {n}: x={x}, y={y}, z={z}, x+z: {x+z}")
-                        print(f"rho: {rho}, res: {res}")
+                        # print(f"Mode {n}: x={x}, y={y}, z={z}, x+z: {x+z}")
+                        # print(f"rho: {rho}, res: {res}")
                         inplane_modes.append(n)
-
+                        # xz.append(x+z)
+            xz_mean = np.mean(xz)
+            print("xz_mean:", xz_mean)
+            inplane_modes = [mode for mode in inplane_modes if self.get_proportions(mode)[2] + self.get_proportions(mode)[4] > 2*xz_mean]
         if self.inplane_modes:
             print("Overwriting previously calculated inplane modes...")
         self.inplane_modes = inplane_modes
