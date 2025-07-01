@@ -1,7 +1,22 @@
 import numpy as np
+from core.parser.modalParser import ModalParser # safe to remove
 
 class ModalAnalyser:
-    def __init__(self, model, oop_thres=90, near_inplane_thres=300):
+    def __init__(self, model: ModalParser, oop_thres: int = 90, near_inplane_thres: int = 300) -> 'ModalAnalyser':
+        """
+        Initializes Modal Analyser class.
+
+        Parameters:
+        model (ModalParser): 
+            The modal parser instance.
+        oop_thres (int): 
+            Out-of-plane threshold. 
+            This threshold determines the minimum out-of-plane proportion required to classify a mode as out-of-plane.
+        near_inplane_thres (int): 
+            Near in-plane threshold. 
+            This threshold determines how close an out-of-plane should not be to an in-plane mode.
+        """
+        
         self.model = model
         self.mode_table = model.mode_table_df
         self.max = model.max_modes
