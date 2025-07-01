@@ -2,6 +2,32 @@ from io import StringIO
 import pandas as pd
 
 class DATParser:
+    """
+    DATParser is a class for parsing .dat files generated from modal analysis outputs.
+    It provides methods to extract mode tables and mode-specific displacement data
+    from the file contents.
+    Attributes:
+        dat_file (str): Path to the .dat file to be parsed.
+        contents (str): Contents of the .dat file.
+        mode_table_df (pd.DataFrame): DataFrame ['mode_no', 'freq']
+    Methods:
+        __init__(dat_file: str):
+            Initializes the DATParser with the given .dat file path, reads the file,
+            and extracts the mode table DataFrame.
+        _read_file() -> str:
+            Reads the contents of the .dat file if it has a .dat extension.
+            Raises an error if the file cannot be read or does not have the correct extension.
+        extract_str(contents: str, keyword: str, delim: str ='\n\n\n') -> str:
+            Extracts a substring from the contents, starting after the given keyword,
+            and bounded by the specified delimiter. Used to isolate table data.
+        get_mode_table_df() -> pd.DataFrame:
+            Extracts the mode table from the file contents, returning a DataFrame
+            with columns for mode number and frequency.
+        get_mode_df(mode_number: int) -> pd.DataFrame:
+            Extracts the displacement table for a specific mode number, returning a DataFrame
+            with columns for node number and displacement components (U1, U2, U3) -> ['mode_no', 'U1', 'U2', 'U3']
+    """
+
     def __init__(self, dat_file: str):
         self.dat_file = dat_file
         self.contents = self._read_file()
