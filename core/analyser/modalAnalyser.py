@@ -264,21 +264,3 @@ class ModalAnalyser:
         if len(self.outplane_modes) > 0:
             return False
         return True
-
-
-    ## HELPER:
-    def iterate(self, func, params=None, modes=None) -> None:
-        if modes is None:
-            modes = range(1, self.max + 1)
-        for n in modes:
-            print(n)
-            if params is not None:
-                if isinstance(params, dict):
-                    func(n, **params)
-                elif isinstance(params, (list, tuple)):
-                    func(n, *params)
-                else:
-                    func(n, params)
-            else:
-                func(n)
-    
