@@ -4,6 +4,7 @@
 
 # Folders
 data/
+labels/
 
 # Metadata
 .vscode/
