@@ -9,7 +9,7 @@ TODO:
 - Push backend
 - Implement CD/CI pipeline
 
-## Setup
+# Setup
 ### Github
 1. Open terminal and setup your ssh keys:
 ```bash
@@ -52,15 +52,15 @@ cd modal-analysis
 pip install -r requirements.txt
 ```
 
-## Usage
-### GUI
+# Usage
+## GUI
 1. Enter repository and enter this in terminal:
 ```bash
 python -m backend.app
 ```
 2. Go to [local host port 5000](http://localhost:5000).
 
-### Command-Line
+## Command-Line
 ```bash
 python -m scripts.main -dat <path_to_dat_file> -inp <path_to_inp_file>
 ```
@@ -69,4 +69,42 @@ Example:
 python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
 ```
 
-## API Reference
+## API Reference (python scripts)
+This repository is structured as a module. Import everything with reference to the project root. (E.g. from core.analyser.modalAnalyser import ModalAnalyser)
+### ModalParser
+Converts .dat and .inp file into a pandas Dataframe with columns: \['node_no', 'x', 'y', 'z', 'U1', U2', 'U3'\]
+```python
+from core.parser.modalParser import ModalParser
+```
+
+To obtain DataFrame of a specific mode:
+1. Initialize class instance
+```python
+model = ModalParser(<path to dat_file>, <path to inp_file>)
+```
+Example: 
+```python
+model = ModalParser("123.dat", "123.inp")
+```
+
+2. For `n` mode, call the model to get the DataFrame:
+```python
+df = model(<n>)
+```
+Example: 
+```python
+df = model(1)
+```
+
+### ModalAnalyser
+Analyses the DataFrame provided by `ModalParser`
+```python
+from core.analyser.modalAnalyser import ModalAnalyser
+model = ModalParser(<path to dat_file>, <path to inp_file>)
+analyser = ModalAnalyser(model)
+```
+
+Possible methods:
+- `analyser.is_tangential(<n>)`
+- `analyser.get_proportions(<n>)`
+- `analyser.is_rigid_rotation(<n>)`
