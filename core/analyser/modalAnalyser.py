@@ -27,9 +27,23 @@ class ModalAnalyser:
         self.inplane_modes = None
         self.near_inplane = None
         self.outplane_modes = None
-    
-    # n represents mode number
-    def get_proportions(self, n):
+
+    def get_proportions(self, n: int) -> tuple[float, float, float, float, float, float]:
+        """
+        Gets specific proportions from a specific mode.
+
+        Parameters:
+        n (int): The mode number to analyze.
+
+        Returns:
+        tuple: A tuple containing the out-of-plane proportion, in-plane proportion, and the squared displacements.
+            oop: out-of-plane proportion - y^2 / (y^2 + x^2 + z^2)
+            ip: in-plane proportion - (x^2 + z^2) / (y^2 + x^2 + z^2)
+            sq_x: squared displacement in x-direction
+            sq_y: squared displacement in y-direction
+            sq_z: squared displacement in z-direction
+            resultant: resultant displacement
+        """
         mode_df = self.model(n)
         mode_df = mode_df[mode_df['U2'] >= 0].copy()
     
@@ -49,8 +63,19 @@ class ModalAnalyser:
         ip = ((sumsq_x + sumsq_z) / total_energy) * 100
 
         return oop, ip, sumsq_x, sumsq_y, sumsq_z, resultant
-    
-    def is_tangential(self, n, tang_ratio_thres=2.0): 
+
+    def is_tangential(self, n: int, tang_ratio_thres: float = 2.0) -> bool:
+        """
+        Checks if the mode is tangential. Calculates the tangential-to-radial displacement ratio.
+        Takes radial, normal and tangential unit vectors, then computes the displacement components.
+
+        Parameters:
+        n (int): The mode number to analyze.
+        tang_ratio_thres (float): The threshold ratio to determine if the mode is tangential. Default is 2.0.
+
+        Returns:
+        bool: True if the mode is tangential, False otherwise.
+        """
         df = self.model(n, include_node=True)
         ctr_x = df.x.mean()
         ctr_z = df.z.mean()
@@ -75,7 +100,19 @@ class ModalAnalyser:
         else:
             return False
 
-    def is_rigid_rotation(self, n, rigid_ratio_thres=0.1, return_ratio=False):
+    def is_rigid_rotation(self, n: int, rigid_ratio_thres: float = 0.1, return_ratio: bool = False) -> bool:
+        """
+        Checks if the mode is undergoing rigid body rotation. Some modes move in one continuous clockwise/anti-clockwise motion -
+        we want to remove these modes from our analysis.
+
+        Parameters:
+        n (int): The mode number to analyze.
+        rigid_ratio_thres (float): The threshold ratio to determine if the mode is undergoing rigid body rotation. Default is 0.1.
+        return_ratio (bool): Whether to return the rotation ratio instead of just True/False. Default is False.
+
+        Returns:
+        bool: True if the mode is undergoing rigid body rotation, False otherwise.
+        """
         df = self.model(n, include_node=True)
 
         ctr_x = df['x'].mean()
@@ -96,8 +133,17 @@ class ModalAnalyser:
 
         flag = bool(rho > rigid_ratio_thres)
         return (flag, float(rho)) if return_ratio else flag
-    
-    def get_inplane(self):
+
+    def get_inplane(self) -> list[int]:
+        """
+        Get the list of in-plane mode numbers. This is achieved if modes achieve these criterias:
+            1. Tangential
+            2. Not undergoing rigid body rotation
+            3. In-plane displacement is significant (greater than twice the mean)
+
+        Returns:
+        list[int]: The list of in-plane mode numbers.
+        """
         inplane_modes = []
         xz = []
 
@@ -119,6 +165,13 @@ class ModalAnalyser:
         return inplane_modes
     
     def get_near_inplane(self) -> set:
+        """
+        Get the set of modes near the in-plane modes within the specified near_inplane_thres threshold. Only these modes
+        will be tested for out-of-plane behaviour.
+
+        Returns:
+        set: The set of modes near the in-plane modes.
+        """
         if not self.inplane_modes:
             raise ValueError("In-plane modes have not been calculated. Please run get_inplane() first.")
         
@@ -147,12 +200,26 @@ class ModalAnalyser:
         return self.near_inplane
     
     def is_outplane(self, n: int) -> bool:
+        """
+        Check if the mode is out-of-plane. Calculated using the out-of-plane proportion (oop). If greater than oop_thres,
+        it will be considered out-of-plane.
+
+        Returns:
+        bool: True if the mode is out-of-plane, False otherwise.
+        """
         oop, _, _, _, _, _ = self.get_proportions(n)
         if oop > self.oop_thres:
             return True
         return False
     
     def check(self) -> bool:
+        """
+        Check the modal properties and classify modes into in-plane, near in-plane, and out-of-plane.
+        Ensures that out-of-plane modes are not within the specified near-in-plane threshold.
+
+        Returns:
+        bool: True if out-of-plane modes are not within the specified near-in-plane threshold, False otherwise.
+        """
         if not self.inplane_modes:
             self.get_inplane()
         
