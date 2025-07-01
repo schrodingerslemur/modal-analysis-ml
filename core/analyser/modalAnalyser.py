@@ -261,6 +261,8 @@ class ModalAnalyser:
                 self.outplane_modes.append(potential_oop)
 
         print("Out-of-plane modes:", self.outplane_modes)
+        if len(self.outplane_modes) > 0:
+            return False
         return True
 
 
