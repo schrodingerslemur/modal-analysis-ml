@@ -179,29 +179,19 @@ class ModalAnalyser:
     
     def get_inplane(self, tangential=False):
         inplane_modes = []
+        xz = []
 
-        if not tangential:
-            print('not tangential')
-            for n in range(1, self.max + 1):
-                oop, ip, x, y, z, _ = self.get_proportions(n)
-                if ip > self.ip_thres and x+z > self.sumxz_thres and self.contains_node(n) and self.is_tangential(n):
-                    inplane_modes.append(n)
-        else:
-            print('tangential')
-            xz = []
-            for n in range(1, self.max + 1):
-                oop, ip, x, y, z, res = self.get_proportions(n)
-                xz.append(x+z)
-                if self.is_tangential(n) and (print(n, "x+z:", x+z) or True): # TODO: ideal: 350000  or x+z > 200000
-                    flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
-                    if not flag:
-                        # print(f"Mode {n}: x={x}, y={y}, z={z}, x+z: {x+z}")
-                        # print(f"rho: {rho}, res: {res}")
-                        inplane_modes.append(n)
-                        # xz.append(x+z)
-            xz_mean = np.mean(xz)
-            print("xz_mean:", xz_mean)
-            inplane_modes = [mode for mode in inplane_modes if self.get_proportions(mode)[2] + self.get_proportions(mode)[4] > 2*xz_mean]
+        # Ensure is tangential and not rigid motion
+        for n in range(1, self.max + 1):
+            _, _, x, _, z, _ = self.get_proportions(n)
+            xz.append(x+z)
+            if self.is_tangential(n) and not self.is_rigid_rotation(n): 
+                inplane_modes.append(n)
+
+        # Ensure all x+z are > 2 * mean(x+z)
+        xz_mean = np.mean(xz)
+        inplane_modes = [mode for mode in inplane_modes if self.get_proportions(mode)[2] + self.get_proportions(mode)[4] > 2*xz_mean]
+
         if self.inplane_modes:
             print("Overwriting previously calculated inplane modes...")
         self.inplane_modes = inplane_modes
