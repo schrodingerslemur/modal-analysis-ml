@@ -91,7 +91,7 @@ class ModalAnalyser:
         resultant = np.hypot(df['U1'], df['U3'])
         return resultant.min()
     
-    def is_tangential(self, n, tang_ratio_thres=5.0):          # Et/Er threshold
+    def is_tangential(self, n, tang_ratio_thres=2.0):          # Et/Er threshold
         node_df = self.model(1, include_node=True)
 
         ctr_x = node_df.x.mean()
@@ -190,7 +190,6 @@ class ModalAnalyser:
             print('tangential')
             for n in range(1, self.max + 1):
                 oop, ip, x, y, z, res = self.get_proportions(n)
-                print('ip', ip)
                 if self.is_tangential(n) and x+z > 350000: # TODO: possibly add x + z > 300000
                     flag, rho =  self.is_rigid_rotation(n, return_ratio=True)
                     if not flag:
