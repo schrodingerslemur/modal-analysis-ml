@@ -212,6 +212,17 @@ class ModalAnalyser:
             return True
         return False
     
+    def get_outplane(self) -> list[int]:
+        """
+        Gets all outplane modes in the specified range.
+        """
+        outplane_modes = []
+        for mode in range(1, self.max + 1):
+            if self.is_outplane(mode):
+                outplane_modes.append(mode)
+        self.all_outplane_modes = outplane_modes
+        return outplane_modes
+
     def check(self) -> bool:
         """
         Check the modal properties and classify modes into in-plane, near in-plane, and out-of-plane.
@@ -235,7 +246,12 @@ class ModalAnalyser:
             if self.is_outplane(potential_oop):
                 self.outplane_modes.append(potential_oop)
 
-        print("Out-of-plane modes:", self.outplane_modes)
+        # Just for reference
+        self.get_outplane()
+        print("Out-of-plane modes:", self.all_outplane_modes)
+
+        print("The following outplane modes were within 300 Hz of inplane modes:", self.outplane_modes)
+        
         if len(self.outplane_modes) > 0:
             return False
         return True

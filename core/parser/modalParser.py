@@ -7,7 +7,6 @@ class ModalParser:
     """
     ModalParser parses modal analysis data from DAT and INP files. It takes the mode_df from DAT files, and the
     node_df from INP files and combines them.
-    
     Attributes:
         dat (DATParser): Parser for the DAT file.
         mode_table_df (pd.DataFrame): DataFrame containing mode numbers and frequencies.
@@ -34,7 +33,7 @@ class ModalParser:
         if self.node_df is None:
             raise ValueError("No node DataFrame loaded. Please provide an inp_file.")
 
-        mode_df = self.mode_df(mode_no)
+        mode_df = self.dat.get_mode_df(mode_no)
         merged_df = pd.merge(self.node_df, mode_df, on='node_no', how='inner')
         df = merged_df
         return df

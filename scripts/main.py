@@ -15,9 +15,9 @@ def main(dat_path, inp_path):
 
     output = {
         "Inplane modes": analyser.inplane_modes,
-        "The following were checked for outplane because they were within 300 Hz": analyser.near_inplane,
-        "Outplane modes": analyser.outplane_modes,
-        "Pass": passed
+        "Outplane modes": analyser.all_outplane_modes,
+        "Pass": passed,
+        "The following outplane modes were within 300 Hz of inplane modes": analyser.outplane_modes
     }
 
     return output
