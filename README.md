@@ -104,6 +104,7 @@ $$
 
 ### Out-of-plane modes
 Out of plane proportion greater than 90%
+
 $$
 \frac{U_2^2}{U_1^2 + U_3^2} > 90\%
 $$
