@@ -9,7 +9,8 @@ BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 TEMPLATES = os.path.join(BASE, 'frontend')
 
 # where to save uploads
-UPLOAD_DIR = os.path.join(BASE, 'data')
+UPLOAD_DIR = os.environ.get('UPLOAD_FOLDER', '/tmp/uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = Flask(
     __name__,
@@ -25,5 +26,6 @@ register_routes(app)
 def index():
     return render_template('index.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
