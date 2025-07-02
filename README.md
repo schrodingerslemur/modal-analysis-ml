@@ -102,6 +102,12 @@ $$
 \sum \left(U_1^2 + U_3^2\right) > 2 \cdot \mathrm{mean}\left(U_1^2 + U_3^2\right)
 $$
 
+### Out-of-plane modes
+Out of plane proportion greater than 90%
+$$
+\frac{U_2^2}{U_1^2 + U_3^2} > 90\%
+$$
+
 # For development/updating purposes:
 # Setup
 ### Github
