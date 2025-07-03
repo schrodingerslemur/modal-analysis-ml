@@ -6,7 +6,7 @@ from core.analyser.modalAnalyser import ModalAnalyser
 def main(dat_path, inp_path):
     model=ModalParser(dat_path, inp_path)
     analyser = ModalAnalyser(model)
-    passed = analyser.check()
+    passed = analyser.get_results()
 
     if passed:
         print("passed") 
@@ -14,10 +14,9 @@ def main(dat_path, inp_path):
         print("did not pass")
 
     output = {
-        "Inplane modes": analyser.inplane_modes,
-        "Outplane modes": analyser.all_outplane_modes,
-        "Pass": passed,
-        "The following outplane modes were within 300 Hz of inplane modes": analyser.outplane_modes
+        "Results": analyser.results,
+        "Modal Separation Target": "Met" if passed else "Not met",
+
     }
 
     return output

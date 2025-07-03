@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from core.parser.modalParser import ModalParser # safe to remove
 
 class ModalAnalyser:
@@ -18,16 +19,18 @@ class ModalAnalyser:
         """
         
         self.model = model
-        self.mode_table = model.mode_table_df
+        self.mode_table = model.mode_table_df.set_index('mode_no')
         self.max = model.max_modes
 
         self.oop_thres = oop_thres
         self.near_inplane_thres = near_inplane_thres
 
         self.inplane_modes = None
-        self.near_inplane = None
         self.outplane_modes = None
 
+    def get_freq(self, n: int) -> float:
+        return self.mode_table.loc[n].item()
+    
     def get_proportions(self, n: int) -> tuple[float, float, float, float, float, float]:
         """
         Gets specific proportions from a specific mode.
@@ -164,53 +167,6 @@ class ModalAnalyser:
 
         return inplane_modes
     
-    def get_near_inplane(self) -> set:
-        """
-        Get the set of modes near the in-plane modes within the specified near_inplane_thres threshold. Only these modes
-        will be tested for out-of-plane behaviour.
-
-        Returns:
-        set: The set of modes near the in-plane modes.
-        """
-        if not self.inplane_modes:
-            raise ValueError("In-plane modes have not been calculated. Please run get_inplane() first.")
-        
-        near_inplane = set()
-
-        freqs = self.mode_table.set_index('mode_no')
-
-        for mode in self.inplane_modes:
-            curr_freq = freqs.loc[mode].item()
-            # Increasing order
-            i = 1
-            while (mode + i <= self.max) and (freqs.loc[mode + i].item() - curr_freq <= self.near_inplane_thres) and (mode + i not in self.inplane_modes):
-                near_inplane.add(mode+i)
-                i += 1
-            
-            # Decreasing order
-            j = 1
-            while (mode - j >= 1) and (curr_freq - freqs.loc[mode-j].item() <= self.near_inplane_thres) and (mode - j not in self.inplane_modes):
-                near_inplane.add(mode-j)
-                j += 1
-        
-        if self.near_inplane:
-            print("Overwriting previously calculated NEAR inplane modes")
-
-        self.near_inplane = sorted(list(near_inplane))
-        return self.near_inplane
-    
-    def is_outplane(self, n: int) -> bool:
-        """
-        Check if the mode is out-of-plane. Calculated using the out-of-plane proportion (oop). If greater than oop_thres,
-        it will be considered out-of-plane.
-
-        Returns:
-        bool: True if the mode is out-of-plane, False otherwise.
-        """
-        oop, _, _, _, _, _ = self.get_proportions(n)
-        if oop > self.oop_thres:
-            return True
-        return False
     
     def get_outplane(self) -> list[int]:
         """
@@ -218,12 +174,13 @@ class ModalAnalyser:
         """
         outplane_modes = []
         for mode in range(1, self.max + 1):
-            if self.is_outplane(mode):
+            oop, _, _, _, _, _ = self.get_proportions(mode)
+            if oop > self.oop_thres:
                 outplane_modes.append(mode)
-        self.all_outplane_modes = outplane_modes
+        self.outplane_modes = outplane_modes
         return outplane_modes
 
-    def check(self) -> bool:
+    def get_results(self) -> bool:
         """
         Check the modal properties and classify modes into in-plane, near in-plane, and out-of-plane.
         Ensures that out-of-plane modes are not within the specified near-in-plane threshold.
@@ -233,25 +190,32 @@ class ModalAnalyser:
         """
         if not self.inplane_modes:
             self.get_inplane()
-        
         print("In-plane modes:", self.inplane_modes)
-
-        if not self.near_inplane:
-            self.get_near_inplane()
-
-        print("Near in-plane modes:", self.near_inplane)
-
-        self.outplane_modes = []
-        for potential_oop in self.near_inplane:
-            if self.is_outplane(potential_oop):
-                self.outplane_modes.append(potential_oop)
 
         # Just for reference
         self.get_outplane()
-        print("Out-of-plane modes:", self.all_outplane_modes)
+        print("Out-of-plane modes:", self.outplane_modes)
 
-        print("The following outplane modes were within 300 Hz of inplane modes:", self.outplane_modes)
-        
-        if len(self.outplane_modes) > 0:
+        self.results = self.results_table()
+        print("Results Table:")
+        print(self.results)
+        if (self.results["Lower Frequency Diff (Hz)"].min() < self.near_inplane_thres or self.results["Upper Frequency Diff (Hz)"].min() < self.near_inplane_thres):
+            print("Warning: Some out-of-plane modes are near in-plane modes.")
             return False
         return True
+
+    def results_table(self) -> pd.DataFrame:
+        inplane_outplane_tuple = []
+
+        for inplane_mode in self.inplane_modes:
+            # Find nearest out-of-plane modes to the left and right
+            left = max([m for m in self.outplane_modes if m < inplane_mode], default=None)
+            right = min([m for m in self.outplane_modes if m > inplane_mode], default=None)
+
+            left_freq, inplane_freq, right_freq = self.get_freq(left), self.get_freq(inplane_mode), self.get_freq(right)
+            left_diff = np.nan if left_freq is None else inplane_freq - left_freq
+            right_diff = np.nan if right_freq is None else right_freq - inplane_freq
+
+            inplane_outplane_tuple.append((left_diff, left_freq, inplane_freq, right_freq, right_diff))
+
+        return pd.DataFrame(inplane_outplane_tuple, columns=["Lower Frequency Diff (Hz)", "Lower Out-of-plane (Hz)", "In-plane (Hz)", "Right Out-of-plane (Hz)", "Upper Frequency Diff (Hz)"])
