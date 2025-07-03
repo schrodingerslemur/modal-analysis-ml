@@ -1,6 +1,6 @@
 import os
 
-from flask import jsonify, request  # type:ignore
+from flask import jsonify, request, render_template  # type:ignore
 from werkzeug.utils import secure_filename  # type:ignore
 
 from scripts.main import main
@@ -13,7 +13,7 @@ def register_routes(app):
         inp_file = request.files.get("inp_file")
 
         if not dat_file or not inp_file:
-            return jsonify({"error": "Please upload both files."}), 400
+            return render_template("result.html", error="Please upload both files.", result=None), 400
 
         # secure filenames
         dat_name = secure_filename(dat_file.filename)
@@ -30,7 +30,7 @@ def register_routes(app):
 
         try:
             result = main(dat_path, inp_path)
-            return jsonify({"result": result})
+            # pass result dict to template
+            return render_template("result.html", result=result, error=None)
         except Exception as e:
-            # optional: clean up saved files here if you want
-            return jsonify({"error": str(e)}), 500
+            return render_template("result.html", error=str(e), result=None), 500
