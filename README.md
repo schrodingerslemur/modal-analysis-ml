@@ -131,43 +131,47 @@ cat ~/.ssh/id_rsa.pub
 git clone git@github.ford.com:BHENDRAT/modal-analysis.git
 ```
 
-2. Create a virtual environment
+2. Install uv package manager
+**On macOS and Linux:**
 ```bash
-pip install virtualenv
-python -m virtualenv env
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-3. Activate virtual environment
-If you are on Windows: 
+**On Windows:**
 ```bash
-./env/Scripts/activate.ps1
-```
-On mac: (might be wrong, look for online documentation for activating virtual env. Likewise for Linux)
-```bash
-source env/Scripts/activate
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-4. Install necessary libraries
+**Note:** After installation, ensure uv is added to your PATH. You may need to restart your terminal or source your shell configuration file.
+
+3. Install dependencies and create virtual environment
 ```bash
 cd modal-analysis
-pip install -r requirements.txt
+uv sync
+```
+
+This will automatically create a virtual environment and install all necessary packages from the `pyproject.toml` and `uv.lock` files.
+
+4. Activate the virtual environment (optional)
+```bash
+source .venv/bin/activate
 ```
 
 # Usage
 ## GUI
-1. Enter repository and enter this in terminal:
+1. Enter repository and run the app:
 ```bash
-python -m backend.app
+uv run python -m backend.app
 ```
 2. Go to [local host port 5000](http://localhost:5000).
 
 ## Command-Line
 ```bash
-python -m scripts.main -dat <path_to_dat_file> -inp <path_to_inp_file>
+uv run python -m scripts.main -dat <path_to_dat_file> -inp <path_to_inp_file>
 ```
 Example:
 ```bash
-python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
+uv run python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
 ```
 
 ## API Reference (python scripts)
