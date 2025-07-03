@@ -178,6 +178,49 @@ Example:
 uv run python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
 ```
 
+## HPC Deployment
+For HPC deployment, users need to have an HPC account.
+
+### HPC Account Setup
+Request an HPC account here: https://fcp.ford.com/hpc
+
+The same login can be used to access HPC's image registry `harbor.hpc.ford.com`.
+
+### Image Registry Access
+The modal-analysis project can be accessed here: https://harbor.hpc.ford.com/harbor/projects/4308/repositories
+
+### HPC System Login
+To login to HPC from your system terminal:
+```bash
+ssh -p 22 <username>@hpclogin.hpc.ford.com
+ssh hpcloginml
+```
+
+### HPC Cluster Login
+To login to HPC k8s cluster use:
+```bash
+klogin prod
+```
+
+### Automated Deployment Script
+The `deploy_to_hpc.sh` script automates the entire deployment process:
+1. Transfers files to HPC
+2. Builds Docker image 
+3. Pushes image to the registry
+4. Deploys to your user namespace
+
+To use the deployment script:
+```bash
+./deploy_to_hpc.sh
+```
+
+### Application-Level Namespace
+You can also request an application-level namespace instead of using your user namespace. 
+
+Refer to this documentation for requesting an application-level namespace: https://docs.hpc.ford.com/k8s/namespace-app/
+
+Once an application-level namespace is created, the app can be deployed to it instead of a user namespace.
+
 ## API Reference (python scripts)
 This repository is structured as a module. Import everything with reference to the project root. (E.g. from core.analyser.modalAnalyser import ModalAnalyser)
 ### ModalParser
