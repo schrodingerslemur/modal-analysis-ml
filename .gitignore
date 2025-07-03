@@ -16,7 +16,6 @@ __pycache__/
 #Env folders
 .venv/
 env/
-script.env
 
 
 # jupyter

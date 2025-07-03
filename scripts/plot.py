@@ -13,9 +13,6 @@ def main(dat_path, inp_path, mode_no):
     mode_no = int(mode_no)
     df = model(mode_no, include_node=True)
     df['resultant'] = np.sqrt(df['U1']**2 + df['U2']**2 + df['U3']**2)
-    # sum_df = mode_df[['node_no', 'resultant']]  # node and sum
-    # merged_df = pd.merge(node_df, sum_df, on='node_no', how='inner')
-    # df = merged_df
 
     custom_colorscale = [
         [0.0, '#00008B'],  # dark blue
