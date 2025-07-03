@@ -16,7 +16,6 @@ def main(dat_path, inp_path):
     output = {
         "Results": analyser.results,
         "Modal Separation Target": "Met" if passed else "Not met",
-
     }
 
     return output
