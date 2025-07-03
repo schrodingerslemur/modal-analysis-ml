@@ -94,8 +94,9 @@ echo -e "${PURPLE}Building image and registering the container${NC}"
 
 # Define the registry and robot account details - USING SERVER 2 CREDENTIALS
 REGISTRY_URL="registry.ford.com"
+HPC_REGISTRY_URL="harbor.hpc.ford.com"
 ROBOT_USERNAME="gesautaiml+robot_gesautaiml"
-# ROBOT_TOKEN is loaded from script.env (same as server 2)
+HPC_ROBOT_USERNAME="robot\\\$modal-analysis+robot-modal-analysis"
 
 # SSH into HPC and then into the second server
 echo -e "${PURPLE}Connecting to HPC servers and building container...${NC}"
@@ -113,7 +114,8 @@ ssh -q -T -p 22 $CURRENT_USER@hpclogin.hpc.ford.com << EOF
             echo -e "${RED}Failed to log in to container registry!${NC}"
             exit 1
         fi
-
+        #Login to hpc registry too to pull the image
+        buildah login -u $HPC_ROBOT_USERNAME -p $ROBOT_TOKEN $HPC_REGISTRY_URL
         # Set proxy environment variables
         echo -e "${CYAN}Setting proxy environment variables...${NC}"
         export HTTP_PROXY=http://internet.ford.com:83
