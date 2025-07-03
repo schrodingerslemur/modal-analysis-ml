@@ -30,7 +30,10 @@ def register_routes(app):
 
         try:
             result = main(dat_path, inp_path)
+            print(type(result))
             # pass result dict to template
-            return render_template("result.html", result=result, error=None)
+            table_html = result["Results"].to_html(classes="table table-striped", index=False)
+            return render_template("result.html", result=table_html, modal_target=result.get("Modal Separation Target"), error=None)
+
         except Exception as e:
             return render_template("result.html", error=str(e), result=None), 500
