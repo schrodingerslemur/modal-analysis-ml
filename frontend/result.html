@@ -38,7 +38,12 @@
       <div class="alert alert-danger">{{ error }}</div>
     {% else %}
       {% if modal_target %}
-        <p><strong>Modal Target: </strong> {{ modal_target }}</p>
+        <p>
+          <strong>Modal Target: </strong>
+          <span class="{% if modal_target == 'Met' %}text-success{% elif modal_target == 'Not met' %}text-danger{% endif %}">
+        {{ modal_target }}
+          </span>
+        </p>
       {% endif %}
 
       {% if inplane_modes %}
