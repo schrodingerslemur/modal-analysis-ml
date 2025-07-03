@@ -127,11 +127,13 @@ cat ~/.ssh/id_rsa.pub
 
 ### Requirements
 1. Clone the repository
+   
 ```bash
 git clone git@github.ford.com:BHENDRAT/modal-analysis.git
 ```
 
 2. Install uv package manager
+
 **On macOS and Linux:**
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -145,6 +147,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 **Note:** After installation, ensure uv is added to your PATH. You may need to restart your terminal or source your shell configuration file.
 
 3. Install dependencies and create virtual environment
+   
 ```bash
 cd modal-analysis
 uv sync
@@ -152,7 +155,8 @@ uv sync
 
 This will automatically create a virtual environment and install all necessary packages from the `pyproject.toml` and `uv.lock` files.
 
-4. Activate the virtual environment (optional)
+4. Activate the virtual environment
+   
 ```bash
 source .venv/bin/activate
 ```
