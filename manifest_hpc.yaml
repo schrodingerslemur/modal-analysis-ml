@@ -25,11 +25,11 @@ spec:
         command: ["uv", "run", "python", "-m", "backend.app"]
         resources:
           limits:
-            cpu: "1"
-            memory: "2G"
+            cpu: "3"
+            memory: "6G"
           requests:
-            cpu: "1"
-            memory: "2G"
+            cpu: "1.5"
+            memory: "3G"
 ---
 apiVersion: v1
 kind: Service
@@ -60,12 +60,22 @@ spec:
   http:
   - match:
     - uri:
+        prefix: /rpadma10/modal-analysis/predict
+    rewrite:
+      uri: /predict
+    route:
+    - destination:
+        host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s 
+  - match:
+    - uri:
         prefix: /rpadma10/modal-analysis/
     rewrite:
       uri: /
     route:
     - destination:
         host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s
   - match:
     - uri:
         prefix: /rpadma10/modal-analysis
@@ -74,3 +84,5 @@ spec:
     route:
     - destination:
         host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s
+

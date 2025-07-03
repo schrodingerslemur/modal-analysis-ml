@@ -137,38 +137,23 @@
       background: #bdc3c7;
     }
 
-    /* Loading overlay */
-    .loading-overlay {
+    /* Inline spinner */
+    .processing-indicator {
       display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(5px);
-      z-index: 1000;
       text-align: center;
-    }
-
-    .spinner-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1em;
-      font-weight: 500;
+      margin-top: 20px;
       color: #4a5568;
+      font-size: 0.9em;
     }
 
     .spinner-icon {
-      border: 4px solid #e2e8f0;
-      border-top: 4px solid #5dade2;
+      border: 3px solid #e2e8f0;
+      border-top: 3px solid #5dade2;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 30px;
+      height: 30px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 20px auto;
+      margin: 0 auto 10px auto;
     }
 
     @keyframes spin {
@@ -215,7 +200,7 @@
       <form
         id="uploadForm"
         class="upload-form"
-        action="{{ url_for('predict') }}"
+        action="predict"
         method="POST"
         enctype="multipart/form-data"
       >
@@ -247,20 +232,20 @@
         </div>
 
         <button type="submit" class="submit-btn">🚀 Analyze Rotor Data</button>
-      </form>
-    </div>
 
-    <!-- Loading overlay hidden initially -->
-    <div id="loadingOverlay" class="loading-overlay">
-      <div class="spinner-container">
-        <div class="spinner-icon"></div>
-        Processing, please wait...
-      </div>
+        <!-- Simple spinner below button -->
+        <div id="processingIndicator" class="processing-indicator">
+          <div class="spinner-icon"></div>
+          Processing your files, please wait...
+        </div>
+      </form>
     </div>
 
     <script>
       const form = document.getElementById("uploadForm");
-      const loadingOverlay = document.getElementById("loadingOverlay");
+      const processingIndicator = document.getElementById(
+        "processingIndicator"
+      );
       const submitBtn = document.querySelector(".submit-btn");
 
       // Add visual feedback for file uploads
@@ -276,19 +261,10 @@
       });
 
       form.addEventListener("submit", function (e) {
-        // Show the overlay when form is submitted
-        loadingOverlay.style.display = "block";
+        // Show the processing indicator
+        processingIndicator.style.display = "block";
         submitBtn.disabled = true;
         submitBtn.textContent = "🔄 Processing...";
-
-        // Add a timeout to re-enable the button if something goes wrong
-        setTimeout(() => {
-          if (submitBtn.disabled) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "🚀 Analyze Rotor Data";
-            loadingOverlay.style.display = "none";
-          }
-        }, 30000); // 30 seconds timeout
       });
 
       // Add drag and drop functionality
