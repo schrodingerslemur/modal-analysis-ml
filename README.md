@@ -3,6 +3,16 @@
 This tool runs modal analysis on your data files. Data files are in the form of .dat and .inp files which, as a whole, provide the x, y, and z displacement and position vectors for a node of a given mode. The tool then classifies in-plane and out-of-plane modes for a given CAD using the following mathematics:
 
 For demonstration, x, y, and z are positional vectors and U1, U2, and U3 are displacement vectors.
+
+## Deployed Applications
+The Modal Analysis Tool is deployed and accessible at the following locations:
+
+### HPC Deployment
+- **Application URL**: https://mach1.hpc.ford.com/rpadma10/modal-analysis/
+
+### CaaS Deployment  
+- **Application URL**: https://modal-analysis.apps.pp101.caas.gcp.ford.com/
+
 ### In-plane modes
 In-plane modes have to be 
 - Tangential
@@ -187,7 +197,7 @@ Request an HPC account here: https://fcp.ford.com/hpc
 The same login can be used to access HPC's image registry `harbor.hpc.ford.com`.
 
 ### Image Registry Access
-The modal-analysis project can be accessed here: https://harbor.hpc.ford.com/harbor/projects/4308/repositories
+The modal-analysis project can be accessed here: https://harbor.hpc.ford.com/harbor/projects/4309/repositories
 
 ### HPC System Login
 To login to HPC from your system terminal:
@@ -220,6 +230,30 @@ You can also request an application-level namespace instead of using your user n
 Refer to this documentation for requesting an application-level namespace: https://docs.hpc.ford.com/k8s/namespace-app/
 
 Once an application-level namespace is created, the app can be deployed to it instead of a user namespace.
+
+## CaaS Deployment
+For CaaS (Container as a Service) deployment, users need to have access to the Ford CaaS platform.
+
+### CaaS Namespace Setup
+To get a namespace on CaaS, follow the documentation here: https://docs.ford.com/caas/docs/getting-started/onboarding/get-a-namespace/
+
+The current deployment uses the namespace "cdpr-ocranalyzer".
+
+### CaaS Registry Access
+The CaaS registry is available at: https://registry.ford.com/
+
+### Automated Deployment Script
+The `deploy_to_caas.sh` script automates the CaaS deployment process:
+1. Builds Docker image
+2. Pushes image to the CaaS registry
+3. Deploys to the specified CaaS namespace
+
+To use the CaaS deployment script:
+```bash
+./deploy_to_caas.sh
+```
+
+**Note:** Ensure you have the necessary permissions and access to the CaaS platform before running the deployment script.
 
 ## API Reference (python scripts)
 This repository is structured as a module. Import everything with reference to the project root. (E.g. from core.analyser.modalAnalyser import ModalAnalyser)
