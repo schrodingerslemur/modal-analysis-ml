@@ -3,6 +3,16 @@
 This tool runs modal analysis on your data files. Data files are in the form of .dat and .inp files which, as a whole, provide the x, y, and z displacement and position vectors for a node of a given mode. The tool then classifies in-plane and out-of-plane modes for a given CAD using the following mathematics:
 
 For demonstration, x, y, and z are positional vectors and U1, U2, and U3 are displacement vectors.
+
+## Deployed Applications
+The Modal Analysis Tool is deployed and accessible at the following locations:
+
+### HPC Deployment
+- **Application URL**: https://mach1.hpc.ford.com/rpadma10/modal-analysis/
+
+### CaaS Deployment  
+- **Application URL**: https://modal-analysis.apps.pp101.caas.gcp.ford.com/
+
 ### In-plane modes
 In-plane modes have to be 
 - Tangential
@@ -127,48 +137,123 @@ cat ~/.ssh/id_rsa.pub
 
 ### Requirements
 1. Clone the repository
+   
 ```bash
 git clone git@github.ford.com:BHENDRAT/modal-analysis.git
 ```
 
-2. Create a virtual environment
+2. Install uv package manager
+
+**On macOS and Linux:**
 ```bash
-pip install virtualenv
-python -m virtualenv env
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-3. Activate virtual environment
-If you are on Windows: 
+**On Windows:**
 ```bash
-./env/Scripts/activate.ps1
-```
-On mac: (might be wrong, look for online documentation for activating virtual env. Likewise for Linux)
-```bash
-source env/Scripts/activate
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-4. Install necessary libraries
+**Note:** After installation, ensure uv is added to your PATH. You may need to restart your terminal or source your shell configuration file.
+
+3. Install dependencies and create virtual environment
+   
 ```bash
 cd modal-analysis
-pip install -r requirements.txt
+uv sync
+```
+
+This will automatically create a virtual environment and install all necessary packages from the `pyproject.toml` and `uv.lock` files.
+
+4. Activate the virtual environment
+   
+```bash
+source .venv/bin/activate
 ```
 
 # Usage
 ## GUI
-1. Enter repository and enter this in terminal:
+1. Enter repository and run the app:
 ```bash
-python -m backend.app
+uv run python -m backend.app
 ```
 2. Go to [local host port 5000](http://localhost:5000).
 
 ## Command-Line
 ```bash
-python -m scripts.main -dat <path_to_dat_file> -inp <path_to_inp_file>
+uv run python -m scripts.main -dat <path_to_dat_file> -inp <path_to_inp_file>
 ```
 Example:
 ```bash
-python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
+uv run python -m scripts.main -dat dats\C346RS_frnt_rotor_modal_separation_10Jun25.dat -inp inps\C346RS_frnt_rotor_modal_separation_10Jun25.inp
 ```
+
+## HPC Deployment
+For HPC deployment, users need to have an HPC account.
+
+### HPC Account Setup
+Request an HPC account here: https://fcp.ford.com/hpc
+
+The same login can be used to access HPC's image registry `harbor.hpc.ford.com`.
+
+### Image Registry Access
+The modal-analysis project can be accessed here: https://harbor.hpc.ford.com/harbor/projects/4309/repositories
+
+### HPC System Login
+To login to HPC from your system terminal:
+```bash
+ssh -p 22 <username>@hpclogin.hpc.ford.com
+ssh hpcloginml
+```
+
+### HPC Cluster Login
+To login to HPC k8s cluster use:
+```bash
+klogin prod
+```
+
+### Automated Deployment Script
+The `deploy_to_hpc.sh` script automates the entire deployment process:
+1. Transfers files to HPC
+2. Builds Docker image 
+3. Pushes image to the registry
+4. Deploys to your user namespace
+
+To use the deployment script:
+```bash
+./deploy_to_hpc.sh
+```
+
+### Application-Level Namespace
+You can also request an application-level namespace instead of using your user namespace. 
+
+Refer to this documentation for requesting an application-level namespace: https://docs.hpc.ford.com/k8s/namespace-app/
+
+Once an application-level namespace is created, the app can be deployed to it instead of a user namespace.
+
+## CaaS Deployment
+For CaaS (Container as a Service) deployment, users need to have access to the Ford CaaS platform.
+
+### CaaS Namespace Setup
+To get a namespace on CaaS, follow the documentation here: https://docs.ford.com/caas/docs/getting-started/onboarding/get-a-namespace/
+
+The current deployment uses the namespace "cdpr-ocranalyzer".
+
+### CaaS Registry Access
+The CaaS registry is available at: https://registry.ford.com/
+
+### Automated Deployment Script
+The `deploy_to_caas.sh` script automates the CaaS deployment process:
+1. Builds Docker image
+2. Pushes image to the CaaS registry
+3. Deploys to the specified CaaS namespace
+
+To use the CaaS deployment script:
+```bash
+./deploy_to_caas.sh
+```
+
+**Note:** Ensure you have the necessary permissions and access to the CaaS platform before running the deployment script.
 
 ## API Reference (python scripts)
 This repository is structured as a module. Import everything with reference to the project root. (E.g. from core.analyser.modalAnalyser import ModalAnalyser)

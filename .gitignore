@@ -13,8 +13,11 @@ labels/
 __pycache__/
 **/__pycache__/
 
-# venv
+#Env folders
+.venv/
 env/
+script.env
+
 
 # jupyter
 jupyter/

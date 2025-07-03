@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: modal-analysis
+  namespace: rpadma10
+  labels:
+    app: modal-analysis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: modal-analysis
+  template:
+    metadata:
+      labels:
+        app: modal-analysis
+    spec:
+      containers:
+      - name: main-container 
+        image: hpcregistry.hpc.ford.com/modal-analysis/modal-analysis-image:v1
+        ports:
+        - containerPort: 5000
+        imagePullPolicy: Always
+        command: ["uv", "run", "python", "-m", "backend.app"]
+        resources:
+          limits:
+            cpu: "3"
+            memory: "6G"
+          requests:
+            cpu: "1.5"
+            memory: "3G"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: modal-analysis-service
+  namespace: rpadma10
+  labels:
+    app: modal-analysis
+spec:
+  type: ClusterIP
+  selector:
+    app: modal-analysis
+  ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: modal-analysis-service
+  namespace: rpadma10
+spec:
+  gateways:
+  - gateway/mach1
+  hosts:
+  - '*'
+  http:
+  - match:
+    - uri:
+        prefix: /rpadma10/modal-analysis/predict
+    rewrite:
+      uri: /predict
+    route:
+    - destination:
+        host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s 
+  - match:
+    - uri:
+        prefix: /rpadma10/modal-analysis/
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s
+  - match:
+    - uri:
+        prefix: /rpadma10/modal-analysis
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: modal-analysis-service.rpadma10.svc.cluster.local
+    timeout: 600s
+
