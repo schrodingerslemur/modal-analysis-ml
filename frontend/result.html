@@ -41,6 +41,14 @@
         <p><strong>Modal Target: </strong> {{ modal_target }}</p>
       {% endif %}
 
+      {% if inplane_modes %}
+        <p><strong>Inplane Modes: </strong> {{ inplane_modes }}</p>
+      {% endif %}
+
+      {% if out_of_plane_modes %}
+        <p><strong>Out-of-plane Modes: </strong> {{ out_of_plane_modes }}</p>
+      {% endif %}
+
       {% if result %}
         <div class="table-responsive">
           {{ result | safe }}

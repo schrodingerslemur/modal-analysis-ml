@@ -33,7 +33,9 @@ def register_routes(app):
             print(type(result))
             # pass result dict to template
             table_html = result["Results"].to_html(classes="table table-striped", index=False)
-            return render_template("result.html", result=table_html, modal_target=result.get("Modal Separation Target"), error=None)
+            return render_template("result.html", result=table_html, modal_target=result.get("Modal Separation Target"), \
+                                   inplane_modes=result.get("Inplane modes"), out_of_plane_modes=result.get("Out-of-plane modes"), \
+                                   error=None)
 
         except Exception as e:
             return render_template("result.html", error=str(e), result=None), 500

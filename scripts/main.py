@@ -15,6 +15,8 @@ def main(dat_path, inp_path):
 
     output = {
         "Results": analyser.results,
+        "Inplane modes": analyser.inplane_modes,
+        "Out-of-plane modes": analyser.outplane_modes,
         "Modal Separation Target": "Met" if passed else "Not met",
     }
 
