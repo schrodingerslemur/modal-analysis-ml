@@ -213,27 +213,14 @@ class ModalAnalyser:
             left = max([m for m in self.outplane_modes if m < inplane_mode], default=None)
             right = min([m for m in self.outplane_modes if m > inplane_mode], default=None)
 
-            left_freq, inplane_freq, right_freq = self.get_freq(left), self.get_freq(inplane_mode), self.get_freq(right)
+            left_freq = self.get_freq(left) if left is not None else None
+            inplane_freq = self.get_freq(inplane_mode)
+            right_freq = self.get_freq(right) if right is not None else None
             left_diff = np.nan if left_freq is None else inplane_freq - left_freq
             right_diff = np.nan if right_freq is None else right_freq - inplane_freq
 
             inplane_outplane_tuple.append((left_diff, left_freq, inplane_freq, right_freq, right_diff))
 
         df = pd.DataFrame(inplane_outplane_tuple, columns=["Lower Frequency Diff (Hz)", "Lower Out-of-plane (Hz)", "In-plane (Hz)", "Right Out-of-plane (Hz)", "Upper Frequency Diff (Hz)"])
-
-        # styled_df = df.style.applymap(self.highlight_diff, subset=['Lower Frequency Diff (Hz)', 'Upper Frequency Diff (Hz)']) \
-        #             .applymap(self.center_align)
-
-        # table_html = styled_df.set_table_attributes('class="table table-striped"').to_html()
-
         return df
-
-    # Purely for design purposes:
-    def highlight_diff(self, val):
-        if pd.isna(val) or val <= 300:
-            return 'color: red; text-align: center;'
-        return 'text-align: center;'
-
-    def center_align(self, val):
-        return 'text-align: center;'
 
