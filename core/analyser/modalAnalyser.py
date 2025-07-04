@@ -190,15 +190,16 @@ class ModalAnalyser:
         """
         if not self.inplane_modes:
             self.get_inplane()
-        print("In-plane modes:", self.inplane_modes)
 
         # Just for reference
         self.get_outplane()
+
+        print("In-plane modes:", self.inplane_modes)
         print("Out-of-plane modes:", self.outplane_modes)
 
         self.results = self.results_table()
         print("Results Table:")
-        # print(self.results)
+        print(self.results)
 
         if (self.results["Lower Frequency Diff (Hz)"].min() < self.near_inplane_thres or self.results["Upper Frequency Diff (Hz)"].min() < self.near_inplane_thres):
             print("Warning: Some out-of-plane modes are near in-plane modes.")
