@@ -17,7 +17,6 @@ __pycache__/
 .venv/
 env/
 script.env
-
 # jupyter
 jupyter/
 *.ipynb

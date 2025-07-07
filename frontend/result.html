@@ -87,10 +87,10 @@
           const val = cells[idx].textContent.trim();
           const num = val === '' || val.toLowerCase() === 'nan' ? NaN : parseFloat(val);
 
-          if (isNaN(num)) {
-            cells[idx].classList.add('highlight-green');
-          } else if (num <= 300) {
+          if (num <= 300) {
             cells[idx].classList.add('highlight-red');
+          } else {
+            cells[idx].classList.add('highlight-green');
           }
         });
       });
