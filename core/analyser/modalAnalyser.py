@@ -206,7 +206,7 @@ class ModalAnalyser:
             return False
         return True
 
-    def results_table(self) -> 'html':
+    def results_table(self) -> 'html': #type:ignore
         inplane_outplane_tuple = []
 
         for inplane_mode in self.inplane_modes:
