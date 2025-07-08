@@ -21,3 +21,4 @@ script.env
 jupyter/
 *.ipynb
 .backup
+node_modules/
