@@ -22,6 +22,8 @@ class INPParser:
         self.inp_file = inp_file
         self.contents = self._read_file()
         self.node_df = self.str_to_df(self.contents)
+        self.density = self.get_density(self.contents)
+        self.elastic_modulus = self.get_elastic_modulus(self.contents)
 
     def _read_file(self) -> str:
         if self.inp_file.endswith(".inp"):
