@@ -1,5 +1,6 @@
 from io import StringIO
 import pandas as pd
+import re
 
 class INPParser:
     """
@@ -68,3 +69,32 @@ class INPParser:
         )
 
         return node_df
+    
+    def get_density(contents: str) -> float:
+        """
+        Extracts the density value from the .inp file contents.
+        """
+        density_keyword = "*DENSITY"
+        density_str = INPParser.extract_str(contents, density_keyword, ",")
+
+        try:
+            return float(density_str.strip())
+        except ValueError:
+            raise ValueError(f"Invalid density value: {density_str.strip()}")
+        
+    def get_elastic_modulus(contents: str) -> float:
+        """
+        Extracts the elastic modulus value from the .inp file contents.
+        """
+        # Match *ELASTIC followed by any characters (non-greedy) until a newline
+        match = re.search(r'^\*ELASTIC[^\r\n]*[\r\n]+', contents, re.MULTILINE | re.IGNORECASE)
+        if not match:
+            raise ValueError("Could not find *ELASTIC section in the input file.")
+        elastic_modulus_keyword = match.group(0).strip()
+        elastic_modulus_str = INPParser.extract_str(contents, elastic_modulus_keyword, ",")
+
+        try:
+            return float(elastic_modulus_str.strip())
+        except ValueError:
+            raise ValueError(f"Invalid elastic modulus value: {elastic_modulus_str.strip()}")
+
