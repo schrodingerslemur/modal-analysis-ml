@@ -1,41 +1,65 @@
 import os
+from pathlib import Path
+from typing import Dict, Any
 
-from flask import jsonify, request, render_template  # type:ignore
-from werkzeug.utils import secure_filename  # type:ignore
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
 
 from scripts.main import main
 
 
-def register_routes(app):
-    @app.route("/predict", methods=["POST"])
-    def predict():
-        dat_file = request.files.get("dat_file")
-        inp_file = request.files.get("inp_file")
+def register_routes(app: FastAPI):
+    @app.post("/predict")
+    async def predict(
+        dat_file: UploadFile = File(..., description="DAT file upload"),
+        inp_file: UploadFile = File(..., description="INP file upload"),
+    ) -> Dict[str, Any]:
+        # Validate file uploads
+        if not dat_file.filename or not inp_file.filename:
+            raise HTTPException(
+                status_code=400, detail="Please upload both dat_file and inp_file"
+            )
 
-        if not dat_file or not inp_file:
-            return render_template("result.html", error="Please upload both files.", result=None), 400
+        # Get upload directory from app state
+        upload_dir = app.state.upload_folder
 
-        # secure filenames
-        dat_name = secure_filename(dat_file.filename)
-        inp_name = secure_filename(inp_file.filename)
-
-        # saves to ../data
-        upload_dir = app.config["UPLOAD_FOLDER"]
-        dat_path = os.path.join(upload_dir, dat_name)
-        inp_path = os.path.join(upload_dir, inp_name)
-
-        # save uploads
-        dat_file.save(dat_path)
-        inp_file.save(inp_path)
+        # Create secure file paths
+        dat_path = upload_dir / dat_file.filename
+        inp_path = upload_dir / inp_file.filename
 
         try:
-            result = main(dat_path, inp_path)
-            print(type(result))
-            # pass result dict to template
-            table_html = result["Results"].to_html(classes="table table-striped", index=False)
-            return render_template("result.html", result=table_html, modal_target=result.get("Modal Separation Target"), \
-                                   inplane_modes=result.get("Inplane modes"), out_of_plane_modes=result.get("Out-of-plane modes"), \
-                                   error=None)
+            # Save uploaded files
+            with open(dat_path, "wb") as f:
+                content = await dat_file.read()
+                f.write(content)
+
+            with open(inp_path, "wb") as f:
+                content = await inp_file.read()
+                f.write(content)
+
+            # Process the files
+            result = main(str(dat_path), str(inp_path))
+
+            # Convert DataFrame to dict if it exists
+            response_data = {}
+            if "Results" in result and hasattr(result["Results"], "to_dict"):
+                response_data["results"] = result["Results"].to_dict(orient="records")
+
+            # Add other result fields
+            if "Modal Separation Target" in result:
+                response_data["modal_target"] = result["Modal Separation Target"]
+            if "Inplane modes" in result:
+                response_data["inplane_modes"] = result["Inplane modes"]
+            if "Out-of-plane modes" in result:
+                response_data["out_of_plane_modes"] = result["Out-of-plane modes"]
+
+            return response_data
 
         except Exception as e:
-            return render_template("result.html", error=str(e), result=None), 500
+            raise HTTPException(status_code=500, detail=str(e))
+
+        finally:
+            # Optional: Clean up uploaded files after processing
+            # dat_path.unlink(missing_ok=True)
+            # inp_path.unlink(missing_ok=True)
+            pass

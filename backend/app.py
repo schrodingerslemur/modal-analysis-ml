@@ -1,31 +1,27 @@
 import os
+from pathlib import Path
 
-from flask import Flask, render_template  # type:ignore
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
 
 from backend.routes import register_routes
 
 # compute project_root/
-BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-# point to frontend/ for templates
-TEMPLATES = os.path.join(BASE, "frontend")
+BASE = Path(__file__).parent.parent.absolute()
 
 # where to save uploads
-UPLOAD_DIR = os.environ.get("UPLOAD_FOLDER", "/tmp/uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+UPLOAD_DIR = Path(os.environ.get("UPLOAD_FOLDER", "/tmp/uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-app = Flask(__name__, template_folder=TEMPLATES)
-app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+app = FastAPI(title="Your API", version="1.0.0")
 
-# register /predict route
+# Store upload directory in app state for access in routes
+app.state.upload_folder = UPLOAD_DIR
+
+# register routes
 register_routes(app)
 
-
-# serve the upload form at /
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=5000)
