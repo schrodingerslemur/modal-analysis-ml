@@ -41,9 +41,8 @@ class INPParser:
         Returns the extracted node, x, y, z table string from an inp_file
         """
         start_index = inp_contents.find(start_keyword)
-        end_index = inp_contents.find(end_keyword)
-
-        start_index += len(start_keyword) + 1
+        start_index += len(start_keyword)
+        end_index = inp_contents.find(end_keyword, start_index)
         table_str = inp_contents[start_index:end_index]
 
         return table_str
@@ -72,7 +71,7 @@ class INPParser:
 
         return node_df
     
-    def get_density(contents: str) -> float:
+    def get_density(self, contents: str) -> float:
         """
         Extracts the density value from the .inp file contents.
         """
@@ -82,17 +81,14 @@ class INPParser:
         try:
             return float(density_str.strip())
         except ValueError:
+            print(density_str)
             raise ValueError(f"Invalid density value: {density_str.strip()}")
         
-    def get_elastic_modulus(contents: str) -> float:
+    def get_elastic_modulus(self, contents: str) -> float:
         """
         Extracts the elastic modulus value from the .inp file contents.
         """
-        # Match *ELASTIC followed by any characters (non-greedy) until a newline
-        match = re.search(r'^\*ELASTIC[^\r\n]*[\r\n]+', contents, re.MULTILINE | re.IGNORECASE)
-        if not match:
-            raise ValueError("Could not find *ELASTIC section in the input file.")
-        elastic_modulus_keyword = match.group(0).strip()
+        elastic_modulus_keyword = "*ELASTIC, TYPE = ISOTROPIC"
         elastic_modulus_str = INPParser.extract_str(contents, elastic_modulus_keyword, ",")
 
         try:
