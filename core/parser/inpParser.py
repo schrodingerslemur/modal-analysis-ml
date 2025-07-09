@@ -1,5 +1,6 @@
 from io import StringIO
 import pandas as pd
+import re
 
 class INPParser:
     """
@@ -21,6 +22,8 @@ class INPParser:
         self.inp_file = inp_file
         self.contents = self._read_file()
         self.node_df = self.str_to_df(self.contents)
+        self.density = self.get_density(self.contents)
+        self.elastic_modulus = self.get_elastic_modulus(self.contents)
 
     def _read_file(self) -> str:
         if self.inp_file.endswith(".inp"):
@@ -38,9 +41,8 @@ class INPParser:
         Returns the extracted node, x, y, z table string from an inp_file
         """
         start_index = inp_contents.find(start_keyword)
-        end_index = inp_contents.find(end_keyword)
-
-        start_index += len(start_keyword) + 1
+        start_index += len(start_keyword)
+        end_index = inp_contents.find(end_keyword, start_index)
         table_str = inp_contents[start_index:end_index]
 
         return table_str
@@ -68,3 +70,29 @@ class INPParser:
         )
 
         return node_df
+    
+    def get_density(self, contents: str) -> float:
+        """
+        Extracts the density value from the .inp file contents.
+        """
+        density_keyword = "*DENSITY"
+        density_str = INPParser.extract_str(contents, density_keyword, ",")
+
+        try:
+            return float(density_str.strip())
+        except ValueError:
+            print(density_str)
+            raise ValueError(f"Invalid density value: {density_str.strip()}")
+        
+    def get_elastic_modulus(self, contents: str) -> float:
+        """
+        Extracts the elastic modulus value from the .inp file contents.
+        """
+        elastic_modulus_keyword = "*ELASTIC, TYPE = ISOTROPIC"
+        elastic_modulus_str = INPParser.extract_str(contents, elastic_modulus_keyword, ",")
+
+        try:
+            return float(elastic_modulus_str.strip())
+        except ValueError:
+            raise ValueError(f"Invalid elastic modulus value: {elastic_modulus_str.strip()}")
+
