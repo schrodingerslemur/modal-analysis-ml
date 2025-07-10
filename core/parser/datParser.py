@@ -120,3 +120,12 @@ class DATParser:
         )
         return mode_df
 
+    def get_freq(self, mode_number: int) -> float:
+        """
+        Extracts the frequency for a specific mode number.
+        """
+        mode_row = self.mode_table_df[self.mode_table_df['mode_no'] == mode_number]
+        if not mode_row.empty:
+            return mode_row['freq'].values[0]
+        else:
+            raise ValueError(f"Mode number {mode_number} not found.")
