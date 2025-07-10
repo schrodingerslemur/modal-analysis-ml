@@ -37,14 +37,15 @@ def create_json_from_dat(dat_file, dest_file):
     assert(dest_file.endswith(".json"), "Destination file must be a .json file")
 
     parser = DATParser(dat_file)
-    data = []
+    freq = []
     for i in range(1, 51):
-        freq = parser.get_freq(i)
-        data.append({
-            "label": f"Mode {i} Frequency",
-            "type": "vector",
-            "data": [freq]
-        })
+        freq.append(parser.get_freq(i))
+
+    data= [{
+        "label": f"Modal frequencies",
+        "type": "vector",
+        "data": freq
+    }]
 
     json_output = json.dumps(data, indent=4)
 
