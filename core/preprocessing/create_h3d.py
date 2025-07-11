@@ -10,8 +10,7 @@ def create_h3d_from_odb(input_file, output_file, config_file):
         "-c", config_file,
         input_file,
         input_file,
-        "-o", output_file,
-        "-a"
+        "-o", output_file
     ]
 
     # Combine the executable and arguments
