@@ -1,10 +1,11 @@
 # Large files
 *.dat
 *.inp
+*.odb
+*.mvw
 
 # Folders
-data/
-labels/
+ml_data/
 
 # Metadata
 .vscode/
@@ -17,6 +18,7 @@ __pycache__/
 .venv/
 env/
 script.env
+
 # jupyter
 jupyter/
 *.ipynb
