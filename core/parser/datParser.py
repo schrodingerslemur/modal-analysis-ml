@@ -1,5 +1,6 @@
 from io import StringIO
 import pandas as pd
+import numpy as np
 
 class DATParser:
     """
@@ -129,3 +130,16 @@ class DATParser:
             return mode_row['freq'].values[0]
         else:
             raise ValueError(f"Mode number {mode_number} not found.")
+        
+    def get_max_disp(self) -> int:
+        """
+        Extracts the maximum displacement for all modes.
+        """
+        max_disp = 0
+        for mode_number in self.mode_table_df['mode_no']:
+            mode_df = self.get_mode_df(mode_number)
+            if not mode_df.empty:
+                resultant = np.sqrt(mode_df['U1']**2 + mode_df['U2']**2 + mode_df['U3']**2)
+                max_disp = max(max_disp, resultant.max())
+
+        return max_disp
