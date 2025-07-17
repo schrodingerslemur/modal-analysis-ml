@@ -1,0 +1,28 @@
+# Large files
+*.dat
+*.inp
+*.odb
+*.mvw
+
+# Folders
+ml_data/
+notebooks/
+
+# Metadata
+.vscode/
+.jupyter/
+.ipynb_checkpoints/
+__pycache__/
+**/__pycache__/
+
+#Env folders
+.venv/
+env/
+script.env
+config.py
+
+# jupyter
+jupyter/
+*.ipynb
+.backup
+node_modules/
