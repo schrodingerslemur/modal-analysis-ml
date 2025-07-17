@@ -6,6 +6,7 @@
 
 # Folders
 ml_data/
+notebooks/
 
 # Metadata
 .vscode/
