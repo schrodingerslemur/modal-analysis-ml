@@ -4,15 +4,7 @@ This tool runs modal analysis on your data files. Data files are in the form of 
 
 For demonstration, x, y, and z are positional vectors and U1, U2, and U3 are displacement vectors.
 
-## Deployed Applications
-The Modal Analysis Tool is deployed and accessible at the following locations:
-
-### HPC Deployment
-- **Application URL**: https://mach1.hpc.ford.com/rpadma10/modal-analysis/
-
-### CaaS Deployment  
-- **Application URL**: https://modal-analysis.apps.pp101.caas.gcp.ford.com/
-
+## Implementation
 ### In-plane modes
 In-plane modes have to be 
 - Tangential
